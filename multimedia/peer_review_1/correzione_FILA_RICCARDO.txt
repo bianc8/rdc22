@@ -1,0 +1,12 @@
+- correttezza del programma (compila e gira senza dare errori)
+   Nella cartella mancano i file di input, una volta copiati nella cartella, il programma gira e compila senza errori.
+   L'algoritmo è descritto nel file 'Report.txt', dove non viene fatto uso dei flowchart,
+      nonostante ciò viene data una buona visione generale dell'algoritmo in uso.
+
+- chiarezza del codice (presenza di commenti e leggibilità del codice)
+   Il codice è chiaro e presenta molti commenti.
+
+- correttezza dell'esecuzione (gli script fanno quanto previsto per ogni file di ingresso testato)
+   Il programma cancella certi pacchetti contenenti rumore, ma non vengono prodotti gli output desiderati, di fatto non viene fatta la cancellazione dei silenzi.
+
+   Il programma non alloca elementi nella memoria dinamica quindi non è necessario controllare memory leaks.

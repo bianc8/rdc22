@@ -1,0 +1,11 @@
+- correttezza del programma (compila e gira senza dare errori)
+    Il programma compila e produce gli output desiderati.
+  Il report 'Algoritmo.pdf' rende chiaro l'algoritmo da un punto di vista generale.
+
+- chiarezza del codice (presenza di commenti e leggibilità del codice)
+  Il programma presenta commenti chiari e il codice è leggibile e autoesplicativo.
+
+- correttezza dell'esecuzione (gli script fanno quanto previsto per ogni file di ingresso testato)
+  Il programma rimuove i silenzi, in ogni inputaudio<N>.data come richiesto.
+  
+  Il programma non alloca elementi nella memoria dinamica quindi non è necessario controllare memory leaks.

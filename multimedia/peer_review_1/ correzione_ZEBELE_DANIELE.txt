@@ -1,0 +1,14 @@
+- correttezza del programma (compila e gira senza dare errori)
+   Il programma compila e genera gli output richiesti
+   Il report 'report.pdf' descrive l'algoritmo nei dettagli, dando una visione generale,
+      non vengono usate le convenzioni dei flowchart ma restano distinguibili i blocchi di elaborazione da quelli decisionali
+
+- chiarezza del codice (presenza di commenti e leggibilità del codice)
+   Il codice è chiaro, le variabili hanno nomi espliciti e auto descrittive e sono presenti molti commenti, che completano il codice auto esplicativo.
+
+- correttezza dell'esecuzione (gli script fanno quanto previsto per ogni file di ingresso testato)
+   Lo script produce gli output desiderati.
+   Denoto che, dando come input la traccia che presenta più rumore di fondo (inputaudio2.data), certi pacchetti vengono classificati come voce, anche se sono rumore di fondo,
+      questo perche il rumore è molto alto, detto ciò, è infattibile distinguere la voce dal rumore, senza un intelligenza artificiale.
+      
+   Il programma non alloca elementi nella memoria dinamica quindi non è necessario controllare memory leaks.

@@ -1,0 +1,24 @@
+----------------------------------
+Descrizione dell'algoritmo
+----------------------------------
+
+L'algoritmo consulta ogni pacchetto singolarmente e decide se tenerlo oppure scartarlo senza basarsi su quelli precedenti o successivi.
+Per ogni pacchetto vengono letti 8 campioni equidistanziati e viene calcolata la media del loro contenuto.
+Se essa è inferiore al minimo arbitrario (definito MINMEAN) il pacchetto viene scartato, altrimenti mantenuto.
+
+-----------------
+
+Dopo una prima sezione di gestione tecnica delle stringhe per i nomi dei file,
+inizia un ciclo while che legge i singoli campioni equidistanziati
+(la funzione fseek alla fine di ogni iterazione si occupa di preparare il puntatore alla posizione del prossimo byte da leggere per la funzione fread).
+
+Il contatore i verifica se si è arrivati alla fine del pacchetto e, in caso, vengono fatti tutti i controlli:
+0) Pacchetto da scartare: viene scritta sul file di output la sequenza di zeri,
+   reperita da un array dichiarato appositamente globale in modo da trovarselo già inizializzato a zero.
+1) Pacchetto da tenere: il puntatore al file di input viene riportato all'inizio del pacchetto
+   (facendolo arretrare di -SAMPLES ovvero -160), viene fatta la lettura e la relativa scrittura sul file di output.
+   La funzione fread ricolloca automaticamente il puntatore al punto dov'era prima di chimare fseek, quindi torna ad essere già pronto per le prossime iterazioni.
+
+In entrambi i casi viene scritto anche il bit corrispondente nel file output di testo con la funzione fprintf.
+Dopo i controlli di fine pacchetto il contatore e la somma vengono azzerati, e il puntatore sul file di input si trova posizionato esattamente all'inizio del pacchetto successivo.
+
