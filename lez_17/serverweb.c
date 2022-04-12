@@ -91,3 +91,5 @@ int main()
    close(s2);
    close(s);
 }
+
+// client si connette a indiirizzo ip:porta 7999
