@@ -20,11 +20,11 @@ int main() {
    int n;
    char * request = "GET / HTTP/1.0\r\n\r\n";
    char * statusline;
-   char hbuffer[10000]
+   char hbuffer[10000];
    unsigned char ipserver[4] = { 142, 250, 180, 3 };
    int s;
 
-   if ((s = socket(AF_INET, SOCK_STREAM, 0) == -1)) {
+   if (-1 == (s = socket(AF_INET, SOCK_STREAM, 0))) {
       printf("errno = %d\n", errno);
       perror("An error occured on creation of socket");
       return -1;
@@ -56,10 +56,11 @@ int main() {
          h[j].v = hbuffer + i + 1;
       }
    }
-   for(i=1; i<j; i++) printf("%s ---> %s\n",h[i].n,h[i].v);
+   for(i = 1; i < j; i++)
+      printf("%s ---> %s\n", h[i].n, h[i].v);
 
-   //  read (int fd, void* buf,      size_t cont)
-   for (size_t len = 0; (n = read(s,      response + len, 1000000 - len)) > 0; len += n);
+   //  read (int fd, void* buf, size_t cont)
+   for (len = 0; (n = read(s, response + len, 1000000 - len)) > 0; len += n);
    if (n == -1) {
       perror("Read fallita");
       return -1;

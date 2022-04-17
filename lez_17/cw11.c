@@ -22,8 +22,9 @@ int main() {
    char hbuffer[10000];
    unsigned char ipserver[4] = { 142, 250, 180, 3 };
    int s;
+   size_t len = 0;
 
-   if ((s = socket(AF_INET, SOCK_STREAM, 0) == -1)) { // throw error with socket(AF_INET, 77, 0)
+   if (-1 == (s = socket(AF_INET, SOCK_STREAM, 0))) {
       printf("errno = %d\n", errno);
       perror("An error occured on creation of socket");
       return -1;
@@ -59,13 +60,13 @@ int main() {
       }
       int bodylen=1000000;
       for(i=1; i<j; i++){
-         printf("%s ---> %s\n",h[i].n,h[i].v);
+         printf("name %s value %s", h[i].n, h[i].v);
          if(!strcmp("Content-Length", h[i].n)) {
             bodylen=atoi(h[i].v);
          }
       }
       // read (int fd, void* buf, size_t cont)
-      for (size_t len = 0; len<bodylen && (n = read(s, response + len, 1000000 - len)) > 0; len += n);
+      for (len = 0; len<bodylen && (n = read(s, response + len, 1000000 - len)) > 0; len += n);
       if (n == -1) {
          perror("Read fallita");
          return -1;
