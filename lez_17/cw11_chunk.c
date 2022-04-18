@@ -78,8 +78,9 @@ int main() {
       size_t cc = 0;
       // read (int fd, void* buf, size_t cont)
       if (chunked > 0) {
+         // infinite loop to read chunks
          for (len = 0;;len += cc) {
-            // chunk_size CRLF
+            // read chunk_size until it meet CR LF
             for (i = 0; 0 < (n = read(s, chunk_size_hex + i, 1)); ++i) {
                if (chunk_size_hex[i] == '\n' && chunk_size_hex[i-1] == '\r') {
                   chunk_size_hex[i-1] = 0;
@@ -90,22 +91,22 @@ int main() {
             chunk_size = (size_t)strtol(chunk_size_hex, NULL, 16);
             printf("chunk_size %zu\n", chunk_size);
             // last chunk has chunk_size == 0
-            if (chunk_size == 0) {
+            if (chunk_size == 0)
                break;
-            }
             // read chunk data
             for (cc = 0; cc < chunk_size && 0 < (n = read(s, response + len + cc, chunk_size - cc)); cc += n);
-            if (n == -1) {
+            if (n < 0) {
                perror("Read fallita");
                return -1;
             }
-            // read cr lf
+            // read CR
             read(s, chunk_size_hex, 1);
+            // read LF
             read(s, chunk_size_hex + 1, 1);
          }
       } else {
          for (len = 0; len<bodylen && (n = read(s, response + len, 10000000 - len)) > 0; len += n);
-         if (n == -1) {
+         if (n < 0) {
             perror("Read fallita");
             return -1;
          }
