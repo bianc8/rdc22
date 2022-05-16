@@ -1,0 +1,12 @@
+- Si verifichi il completamento di tutti i punti
+numero hop
+
+grafico di min/mean/max e std dell'RTT al variare della dimensione del ping
+
+stima R*
+
+valore ottenuto con iperf
+
+considerazioni sui risultati sperimentali
+
+- Si valuti la solidità e correttezza dell'analisi basata sui risultati sperimentali

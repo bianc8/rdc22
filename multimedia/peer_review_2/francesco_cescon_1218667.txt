@@ -1,0 +1,14 @@
+Numero hop: 13 hop.
+
+Vengono graficati i valori dell'RTT minimo, medio e massimo e la deviazione standard al variare della dimensione del pacchetto ICMP.
+
+valore ottenuto con iperf: 359 Mbits/sec
+
+stima R*: viene usata la seguente formula:
+    2/minRi => R* = 147 Mbits/sec
+
+Il collega ipotizza che la stima di R* sia inferiore da quanto riportato dal programma iperf,
+in quanto la connessione è sufficientemente veloce da "annullare" il ritardo causato da un aumento di dimensione del pacchetto ICMP,
+grazie alla variabilità del traffico nella rete.
+
+Ritengo l'ipotesi plausibile.

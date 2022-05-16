@@ -1,0 +1,14 @@
+Numero hop: 16, il numero di hop è stato determinato usando correttamente il comando ping.
+
+Il grafico con punti a dispersione consente di visualizzare chiaramente gli RTT minimi e massimi al variare della dimensione del pacchetto ICMP.
+
+Valore ottenuto con iperf: 1,2 Mbit/sec.
+
+Stima R*: vengono proposte due formule
+    a) 2/min Ri => R* = 86kbit/sec.
+    b) (2 * n.hop)/R => R* = 1,38 Mbit/sec
+
+
+Il collega giustifica la stima di R* discordante dal comando iperf con un ipotesi non verificabile, secondo quanto riportato nella relazione.
+L'ipotesi teorizza che nei vari collegamenti intermedi, tra il client e il server di destinazione, non vi siano colli di bottiglia consistenti, e che quindi il bitrate offerto dai vari collegamenti sia simile.
+Nonostante l'ipotesi non sia verificabile, la stima di R* risulta più vicina a quanto specifica il programma iperf, seguendo l'equazione b, (presumendo che la stima ottenuta dal comando iperf sia corretta).

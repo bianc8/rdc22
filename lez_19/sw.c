@@ -85,7 +85,7 @@ int main()
       }
    }
    else {
-      sprintf(response,"HTTP/1.1 501 Not Implemented\r\n\r\n");// scrive su stringa File Not Found
+      sprintf(response,"HTTP/1.1 501 Not Implemented\r\n\r\n");// scrive su stringa Not Implemented
       write(s2,response,strlen(response)); // scrivo string su socket s2
    }
    close(s2);
