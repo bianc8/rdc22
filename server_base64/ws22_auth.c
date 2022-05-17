@@ -15,24 +15,32 @@ Se l'utente viene autenticato verrà inviata la risorsa richiesta, altrimenti ve
 #include <stdint.h>
 #include <unistd.h>
 
+// base64 alphabet
 char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 // Create a reqLine/response buffer in the static area (all zeros)
 #define buffLen 1024*1024 // 1MB
-
-struct sockaddr_in local, remote;
-
-char reqLine[buffLen];
-char hRequest[buffLen];
-char response[buffLen];
-
 // Define the header struct in order to save the headers returned in the response
 struct Header {
    char *n;
    char *v;
 };
+
+
+struct sockaddr_in local, remote;
+char reqLine[buffLen];
+char hRequest[buffLen];
+char response[buffLen];
+
 // Create an array of headers to save them
 struct Header headers[100];
 
+
+/** f is an helper function for base64_encode
+ *
+ * @param unsigned char *a  pointer to input string to be converted
+ * @param char *d           pointer to output string
+ *
+*/
 void f(unsigned char *a, char *d){
 	d[0] = base64[a[0] >> 2];
 	d[1] = base64[((a[0] << 4) & 0x30) | (a[1] >> 4)];
@@ -40,6 +48,13 @@ void f(unsigned char *a, char *d){
 	d[3] = base64[a[2] & 0x3F];
 }
 
+/** base64_encode encode a string to base64
+ *
+ * @param   unsigned char *in        pointer to input string to be converted
+ * @param   int in_len               len of input string
+ * @param   char *out                pointer to output string
+ * 
+*/
 void base64_encode(unsigned char *in, int in_len, char *out){
 	int out_offset = 0;
 	int i;
@@ -47,7 +62,7 @@ void base64_encode(unsigned char *in, int in_len, char *out){
 		f(in + i, out + out_offset);
 		out_offset += 4;
 	}
-	if(in_len%3==2){
+	if(in_len % 3 == 2){
 		unsigned char x[3];
 		x[0] = in[i];
 		x[1] = in[i+1];
@@ -55,7 +70,7 @@ void base64_encode(unsigned char *in, int in_len, char *out){
 		f(x, out + out_offset);
 		out[out_offset + 3] = '=';
 	}
-	else if(in_len%3==1){
+	else if(in_len % 3 == 1){
 		unsigned char x[3];
 		x[0] = in[i];
 		x[1] = 0;
@@ -67,9 +82,11 @@ void base64_encode(unsigned char *in, int in_len, char *out){
 	out[out_offset] = '\0';
 }
 
-/**
- * readUntilNewLine reads from the file pointed by file and
- * puts in the out buffer the characters until a \n char is reached
+/** readUntilNewLine reads from the file and puts in the out buffer the characters until a \n char is reached
+ * 
+ * @param   FILE* file  file to read line by line
+ * @param   char* out   string to put line read
+ * 
  */
 int readUntilNewLine(FILE* file, char* out) {
    int i = 0;
@@ -79,20 +96,22 @@ int readUntilNewLine(FILE* file, char* out) {
    return i;
 }
 
-/*
- * matchUser reads from credentials file and check if user:passwords exists
+/** matchUser reads from credentials file and check if user:password exists
+ * 
+ * @param   char *user  is the token passed via Basic Authentication to see if it exists
+ * 
 */
 int matchUser( char *user) {
-    FILE *credentials = fopen("passwd.txt", "r");
-    if (credentials == NULL) {
-        perror("File not found");
-        return -1;
+    FILE *file = fopen("passwd.txt", "r");
+    if (file == NULL) {
+        perror("File not found"); return -1;
     }
+    // read file line by line
     char *line = malloc(100), *encodedLine = malloc(134);
     int n, userFound = -1;
-    while ((n = readUntilNewLine(credentials, line)) > 0) {
-        // Try to B64 encode each line and compare to the encoded one provided
-        printf("line %s\n", line);
+
+    while ((n = readUntilNewLine(file, line)) > 0) {
+        // Try to encode in Base64 each line and compare it to the encoded user provided in Auth header
         base64_encode((unsigned char*) line, n, encodedLine);
         if (strcmp(user, encodedLine) == 0) {
             userFound = 1;
@@ -104,7 +123,7 @@ int matchUser( char *user) {
     return userFound;
 }
 
-int main() {  
+int main() {
     int s;
     if (-1 == (s = socket(AF_INET, SOCK_STREAM, 0))) {
         printf("errno = %d\n", errno); perror("Socket Fallita"); return -1;
@@ -144,7 +163,7 @@ int main() {
         }
         int headersCount = 0;
 
-        // The reqLine line is a pointer to the reqLine buffer that contains the HTTP reqLine
+        // reqLine line is a pointer to the reqLine buffer that contains the HTTP request line
         char* reqLine = headers[0].n = hRequest;
 
         // As we do for the client, let's read the reqLine one character at a time until there
@@ -153,41 +172,41 @@ int main() {
             // reached the end of one header
             if (hRequest[i] == '\n' && hRequest[i-1] == '\r') {
                 hRequest[i-1] = 0;
-
                 // if the last read header is all zeros, we finished all the headers
                 if (!headers[headersCount].n[0]) break;
-
                 // The value is the string beginning just after the \n char
                 headers[++headersCount].n = hRequest + i + 1;
             }
 
             // When a ":" is reached, there is a value for the just read key
             if (hRequest[i] == ':' && !headers[headersCount].v) {
-                hRequest[i] = 0;    // End the key
-                // And place the pointer for the value string
-                headers[headersCount].v = hRequest + i + 1;
+                hRequest[i] = 0;    // End the key of the header
+                headers[headersCount].v = hRequest + i + 1; // place the pointer for the value string
             }
         }
 
-        printf("%s\n", reqLine);    // print reqLine line
-        for (int i=1; i<headersCount; i++)  // print headers
+        printf("%s\n", reqLine);    // print the request line
+        for (int i=1; i<headersCount; i++)  // print all the headers headers[0] = reqLine
             printf("%s: %s\n", headers[i].n, headers[i].v);
 
+        // read method, url and version
         char * method, *url, *ver;  
-        method = reqLine;   // consumo e estraggo i token senza copiare byte
-        
         int p = 0;  // p act as offset
+        // read method
+        method = reqLine;
+        // read url
         for(p = 0; reqLine[p] != ' '; p++);
         reqLine[p++] = 0; 
         url = reqLine + p;
-        
+        // read version
         for( ; reqLine[p]!=' '; p++);
         reqLine[p++] = 0; 
         ver = reqLine + p;
-
+        // end request line
         for( ; reqLine[p] =='\n' && reqLine[p-1] == '\r'; p++);
         reqLine[p-1] = 0;
         
+        // handle GET request
         if (!strcmp(method, "GET")){
             char * filename = url + 1; // senza prendere il primo slash, x es: /index.html
             
@@ -201,13 +220,15 @@ int main() {
             }
             // file found, write it in response
             else{
+                // if requested file is in the secure/ directory, check auth header
                 if (!strncmp(url, "/secure/", strlen("/secure/"))) {
-                    // Check if the request comes with an auth header
                     char* authHeader = 0;
                     int i = 0;
                     while (!authHeader && i < headersCount - 1) {
-                        if (strcmp(headers[++i].n, "Authorization") == 0)
+                        // read authorization header
+                        if (!strcmp(headers[++i].n, "Authorization")) {
                             authHeader = headers[i].v;
+                        }
                     }
 
                     printf("Auth found is: %s\n", authHeader);

@@ -1,12 +1,17 @@
-- Si verifichi il completamento di tutti i punti
-numero hop
+Elemento 1 Voto 9/10
 
-grafico di min/mean/max e std dell'RTT al variare della dimensione del ping
+Numero hop: 12
 
-stima R*
+Viene inserito il grafico con l'RTT minimo/massimo/medio e con la deviazione standard, al variare della dimensione del pacchetto ICMP.
 
-valore ottenuto con iperf
+Valore ottenuto con iperf: 20.7 Mbits/sec
 
-considerazioni sui risultati sperimentali
+Stima R*: 20.6 Mbits/sec
 
-- Si valuti la solidità e correttezza dell'analisi basata sui risultati sperimentali
+
+Elemento 2 Voto 9/10
+
+Per la stima di R* viene usata la seguente formula:
+R* = 2/(pendenza retta)
+
+La formula è coerente a quanto detto a lezione.

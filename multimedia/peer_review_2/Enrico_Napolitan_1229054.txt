@@ -1,10 +1,17 @@
+Elemento 1 voto 8/10
+
 Numero hop: 9.
 
 Viene mostrato il grafico di RTT minimo, medio e massiom oltre alla deviazione standard, al variare della dimensione del pacchetto ICMP.
 
 Valore ottenuto con iperf: 18.9 Mbits/sec
 
-Stima R*: viene usata la seguente formula:
+Stima R*: 18.721 Mbits/sec
+
+
+Elemento 2 voto 8/10
+
+Viene usata la seguente formula:
     (packet size, with headers, of packet min Ri)[bits]/(min Ri)[ms] => R* = 18.721 Mbits/sec
 
 La stima del bitrate R* non usa l'approssimazione: 2/(min Ri), nonostante la formula scelta dal collega sembri simile a quanto riportato da iperf, questa non è stata giustificata o dimostrata.

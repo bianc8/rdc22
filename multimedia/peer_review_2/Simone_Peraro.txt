@@ -1,12 +1,17 @@
-- Si verifichi il completamento di tutti i punti
-numero hop
+Elemento 1 Voto 9/10
 
-grafico di min/mean/max e std dell'RTT al variare della dimensione del ping
+Numero hop: 13
 
-stima R*
+Viene inserito il grafico di min/mean/max e della deviazione standard di RTT, al variare della dimensione del ping
 
-valore ottenuto con iperf
+Bandwith ottenuto con iperf: 10.8 Mbits/sec
 
-considerazioni sui risultati sperimentali
+Stima R*: 7,24 Mb/s
 
-- Si valuti la solidità e correttezza dell'analisi basata sui risultati sperimentali
+
+Elemento 2 Voto 10/10
+
+Viene usata la seguente formula per stimare R*:
+RTT = sum(L/Ri + qi)    =>     R* = (Lip * 2 * n hop)/Delay     with Delay = sum(L/Ri)
+
+Tale formula segue i passaggi logici della relazione ed è adeguatamente giustificata.
