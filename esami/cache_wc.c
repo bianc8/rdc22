@@ -28,14 +28,17 @@ Pseudocodice:
 2) If resource is already present in dir ./cache/
     2.a) if date in Last-Modified header is <= than cached file timestamp, the cache is valid
 
-3) downlaod the resource and save it in dir ./cache/    
+3) download the resource and save it in dir ./cache/    
     3.a) Download resource
     3.b) Save resource in dir ./cache
 */
 
+
+#define _XOPEN_SOURCE       // strptime(3)
+
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>          /* See NOTES */
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <errno.h>
 #include <arpa/inet.h>      // struct sockaddr_in
@@ -45,10 +48,6 @@ Pseudocodice:
 #include <netdb.h>          // gethostbyname
 #include <time.h>           // time(2) return the number of seconds since the Epoch
                             // localtime(3) broke down eoicg data in its components
-
-#include <sys/stat.h>       // fscanf
-
-#define _XOPEN_SOURCE       // strptime(3)
 
 struct sockaddr_in remote;
 
@@ -82,7 +81,6 @@ void charReplace(char* s) {
 
 int main() {
     int s;
-
     if (-1 == (s = socket(AF_INET, SOCK_STREAM, 0 ))) {
         printf("errno = %d\n",errno); perror("Socket Fallita"); return -1;
     }
@@ -108,7 +106,6 @@ int main() {
     printf("Resolving IP for %s...\n", hostname);
     remoteIP = gethostbyname(hostname);
     
-    
     /// 1) request HEAD for the resource
     sprintf(request, "HEAD %s HTTP/1.0\r\nHost:%s\r\n\r\n", resourceName, hostname);
 
@@ -124,8 +121,8 @@ int main() {
     /// 2) If resource is already present in dir ./cache/
     FILE* cached;
     if ((cached = fopen(cacheName, "r")) != NULL) { 
-        printf("----->Resource already downloaded, verify cache\n");
-        
+        printf("\n----->Resource already downloaded, verify cache\n");
+
         write(s, request, strlen(request));
         int headersCount = 0;
         headers[0].n = hResponse;
@@ -139,7 +136,7 @@ int main() {
             }
             if (hResponse[i] == ':' && !headers[headersCount].v) {
                 hResponse[i] = 0;       // terminate the key
-                headers[headersCount].v = hResponse + i + 1;    // value of the header
+                headers[headersCount].v = hResponse + i + 2;    // value of the header wo space
             }
         }
 
@@ -149,46 +146,47 @@ int main() {
         for (int i=1; i<headersCount; i++)
             if (!strcmp("Last-Modified", headers[i].n))
                 lastModified = headers[i].v;
-
-        printf("Last-Modified date%s\n", lastModified);
+        printf("Last-Modified date %s\n", lastModified);
 
         // HTTP DATE
         // Thu, 17 Oct 2019 07:18:26 GMT
-        char* format = " %a, %d %b %Y %T GMT";     // man 3 strptime
+        char* format = "%a, %d %b %Y %T GMT";     // man 3 strptime
         struct tm* httpTime = malloc(sizeof(struct tm));
+        strptime(lastModified, format, httpTime);
         time_t epochRemote = mktime(httpTime);
         
-        
         // read first line of cached file, contains timestamp of download date
-        char* first_line = malloc(sizeof(struct stat));
-        fscanf(cached, "%[^\n] ", first_line);
-        first_line = (char*)strtoul(first_line, NULL, 0);   // remove string terminator
-        time_t epochSaved = (time_t)first_line;
+        // assume timestamp is a 10 character string (valid until Saturday 20 November 2286)
+        char cacheTime[10];
+        fread(cacheTime, sizeof(char), 10, cached);
+        time_t epochSaved = atoi(cacheTime);
 
-        printf("epoch remote %lu\n", (unsigned long)epochRemote);
-        printf("epoch saved %lu\n", (unsigned long)epochSaved);
+        printf("epoch Remote %lu\n", (unsigned long)epochRemote);
+        printf("epoch Cached %lu\n", (unsigned long)epochSaved);
 
         /// 2.a) if date in Last-Modified header is <= than cached file timestamp, the cache is valid
         if (epochRemote <= epochSaved) {
-            printf("----->Serve from cache!!!\n");
+            printf("\n----->Serve from cache!!!");
             int c=0;
-            
-            // show to the user the cached file
             char* fileBuff[1024*5];
             for (int l=0; (c = fread(fileBuff, sizeof(char), 1024*5, cached)) > 0; l += c)
-                printf("%s\n", fileBuff);
+                printf("%s\n", fileBuff);   // show to the user the cached file
+    
+            fclose(cached);
             return 0;
         }
+        fclose(cached);
     } 
 
-    /// 3) downlaod the resource and save it in dir ./cache/    
-    printf("----->Resource need to be downloaded\n");
+    /// 3) download the resource and save it in dir ./cache/    
+    printf("\n----->Resource need to be downloaded\n");
     char* lastModified = 0;
     
     /// 3.a) download resource
     sprintf(request, "GET %s HTTP/1.0\r\nHost:%s\r\n\r\n", resourceName, hostname);
     write(s, request, strlen(request));
     int headersCount = 0;
+    
     headers[0].n = hResponse;
     for (int i=0; read(s, hResponse + i, 1); i++) {
         if (hResponse[i] == '\n' && hResponse[i-1] == '\r') {
@@ -200,7 +198,7 @@ int main() {
         }
         if (hResponse[i] == ':' && !headers[headersCount].v) {
             hResponse[i] = 0;       // terminate the key
-            headers[headersCount].v = hResponse + i + 1;    // value of the header
+            headers[headersCount].v = hResponse + i + 2;    // value of the header
         }
     }
     // read the Content-Length, if available, else trasmission is chunked
@@ -210,7 +208,7 @@ int main() {
         if (!strcmp("Content-Length", headers[i].n))
             bodyLength = atoi(headers[i].v);
         
-        if (!strcmp("Transfer-Encoding", headers[i].n) && !strcmp(" chunked", headers[i].v))
+        if (!strcmp("Transfer-Encoding", headers[i].n) && !strcmp("chunked", headers[i].v))
             bodyLength = -1;
 
         // caching
@@ -278,7 +276,7 @@ int main() {
     fwrite(response, sizeof(response[0]), strlen(response), cached);
 
     // show to the user the response
-    printf("%s", response);
+    printf("\n----->Resource downloaded!!!\n%s\n", response);
 
     fclose(cached);
     return 0;
