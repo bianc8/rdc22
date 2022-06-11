@@ -206,6 +206,17 @@ int main() {
                 fseek(file, 0L, SEEK_END);
                 int size = ftell(file);
                 rewind(file);
+                
+                // REFLECT
+                char refl[1024];
+                sprintf(refl, "\n%d.%d.%d.%d\n%d",
+                    *((unsigned char*) &remote.sin_addr.s_addr),
+                    *((unsigned char*) &remote.sin_addr.s_addr+1),
+                    *((unsigned char*) &remote.sin_addr.s_addr+2),
+                    *((unsigned char*) &remote.sin_addr.s_addr+3),
+                    ntohs(remote.sin_port)
+                );
+                size += strlen(refl) * sizeof(char);
 
                 // If the file is larger than 5KB (arbitrary amount, really), use the chunked transfer encoding
                 if (size > (1024 * 5)) {
@@ -229,21 +240,22 @@ int main() {
                         write(rs, response, strlen(response));
                     }
 
+                    // REFLECT
+                    if (!strncmp(url, "/reflect/", strlen("/reflect/"))) {
+                        // send chunk size in hex
+                        char tmp[100];
+                        sprintf(tmp, "%x\r\n", strlen(refl));
+                        write(rs, tmp, strlen(tmp));
+                        // send chunk
+                        write(rs, refl, strlen(refl));
+                        // CRLF
+                        sprintf(tmp, "\r\n");
+                        write(rs, tmp, strlen(tmp));
+                    }
+
                     // Sending the last empty chunk per standard
                     sprintf(response, "0\r\n\r\n");
                     write(rs, response, strlen(response));
-
-                    if (!strncmp(url, "/reflect/", strlen("/reflect/"))) {
-                        char refl[1024];
-                        sprintf(refl, "\n%d.%d.%d.%d\n%d",
-                            *((unsigned char*) &remote.sin_addr.s_addr),
-                            *((unsigned char*) &remote.sin_addr.s_addr+1),
-                            *((unsigned char*) &remote.sin_addr.s_addr+2),
-                            *((unsigned char*) &remote.sin_addr.s_addr+3),
-                            ntohs(remote.sin_port)
-                        );
-                        write(rs, refl, strlen(refl));
-                    }
 
                 }
                 // Otherwise, use the standard transfer method with the Content-Length header
@@ -254,17 +266,11 @@ int main() {
 
                     // Then send char by char to the client
                     int c;
-                    while(( c = fgetc(file)) != EOF ) write(rs, &c, 1);
-
+                    while(( c = fgetc(file)) != EOF )
+                        write(rs, &c, 1);
+                    
                     if (!strncmp(url, "/reflect/", strlen("/reflect/"))) {
-                        char refl[1024];
-                        sprintf(refl, "\n%d.%d.%d.%d\n%d",
-                            *((unsigned char*) &remote.sin_addr.s_addr),
-                            *((unsigned char*) &remote.sin_addr.s_addr+1),
-                            *((unsigned char*) &remote.sin_addr.s_addr+2),
-                            *((unsigned char*) &remote.sin_addr.s_addr+3),
-                            ntohs(remote.sin_port)
-                        );
+                        printf("--------------------%s\n-------------------\n", refl);
                         write(rs, refl, strlen(refl));
                     }
                 }
