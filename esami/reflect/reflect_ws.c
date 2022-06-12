@@ -149,66 +149,13 @@ int main() {
                 write(rs, response, strlen(response));
             }
             else {
-                // A file in the /secure/ dir, the user must provide header Basic auth
-                if (!strncmp(url, "/secure/", strlen("/secure/"))) {
-                    // Check if the request comes with an auth header
-                    char* authHeader = 0;
-                    int i = 0;
-                    while (!authHeader && i < headersCount - 1) {
-                        if (!strcmp(headers[++i].n, "Authorization"))
-                            authHeader = headers[i].v;
-                    }
-
-                    printf("Auth found is: %s\n", authHeader);
-
-                    // If the auth header is not provided, return a 401 error and inform the user that
-                    // basic authication is available using the 'WWW-Authenticate' header
-                    if (!authHeader || strncmp(authHeader, " Basic", strlen(" Basic"))) {
-                        sprintf(response, "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate:basic\r\n\r\n");
-                        write(rs, response, strlen(response));
-                        printf("-- End of request\n\n");
-
-                        fclose(file);
-                        close(rs);
-                        continue;
-                    }
-
-                    // Scan the credentials file and see if the token provided by the client is a valid combination of username:password
-                    FILE *credentials = fopen("users.txt", "r");
-                    char *token = malloc(100), *encodedToken = malloc(134);
-                    int l, userFound = 0;
-                    while ((l = readUntilNewLine(credentials, token)) > 0) {
-                        // Try to B64 encode each line and compare to the encoded one provided
-                        encodeB64((unsigned char*) token, l, encodedToken);
-                        // The token starts with " Basic ", so we need to exclude it (add an offset)
-                        if (!strcmp(authHeader + strlen(" Basic "), encodedToken)) {
-                            userFound = 1;
-                            break;
-                        }
-                    }
-                    free(token);
-                    free(encodedToken);
-
-                    // If a user is not found by the end of the cycle, this combination of username:password is not valid
-                    if (!userFound) {
-                        sprintf(response, "HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate:basic\r\n\r\n");
-                        write(rs, response, strlen(response));
-                        printf("-- End of request\n\n");
-
-                        fclose(file);
-                        close(rs);
-                        continue;
-                    }
-
-                }
-
-                // Now that we know the user can ask this resource, determine the length of the file to be transferred in bytes
+                // Determine the length of the file to be transferred in bytes
                 fseek(file, 0L, SEEK_END);
                 int size = ftell(file);
                 rewind(file);
                 
                 // REFLECT
-                char refl[1024];
+                char refl[30];
                 sprintf(refl, "\n%d.%d.%d.%d\n%d",
                     *((unsigned char*) &remote.sin_addr.s_addr),
                     *((unsigned char*) &remote.sin_addr.s_addr+1),
@@ -269,10 +216,9 @@ int main() {
                     while(( c = fgetc(file)) != EOF )
                         write(rs, &c, 1);
                     
-                    if (!strncmp(url, "/reflect/", strlen("/reflect/"))) {
-                        printf("--------------------%s\n-------------------\n", refl);
+                    // REFLECT
+                    if (!strncmp(url, "/reflect/", strlen("/reflect/")))
                         write(rs, refl, strlen(refl));
-                    }
                 }
                 fclose(file);
             }
