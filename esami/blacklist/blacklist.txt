@@ -1,0 +1,2 @@
+http://127.0.0.1:17999/blacklist.html
+http://88.80.187.84:17999/blacklist.html

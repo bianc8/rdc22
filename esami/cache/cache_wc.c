@@ -33,7 +33,6 @@ Pseudocodice:
     3.b) Save resource in dir ./cache
 */
 
-
 #define _XOPEN_SOURCE       // strptime(3)
 
 #include <stdio.h>
