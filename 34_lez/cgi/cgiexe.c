@@ -114,13 +114,14 @@ int main(int argc, char * argv[], char * env[]){
 	for(i=0;i<length && (t=read(0,buffer+i,length-i));i+=t);
 	char *final = replace(buffer, str1, str2);
 	
-    // save the request in the file
-    txt = fopen("prova.txt", "w+");
-    fwrite(final, sizeof(final[0]), strlen(final), txt);
-
 	// invia la risposta a sw
 	length = strlen(final);
 	for(i=0;i<length && (t=write(1, final+i,length-i)); i+=t);
+	
+    // save the output in the file
+    txt = fopen("output.txt", "w+");
+    fwrite(final, sizeof(final[0]), strlen(final), txt);
+
 
 	printf("Ciao, muoio\n");
 }
