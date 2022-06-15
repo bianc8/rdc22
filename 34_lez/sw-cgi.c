@@ -1,5 +1,3 @@
-// Cartella di Zago
-
 #include<stdio.h>
 #include<stdlib.h>
 #include <string.h>
@@ -120,7 +118,6 @@ int main() {
         reqline[i++]=0; 
         
         filename = url+1;
-        //printf("Method: %s\tVer: %s\tFilename: %s\tUrl: %s\n", method, ver, filename, url);
 
         //CGI
         if (!strncmp(url,"/cgi/",5)) {
