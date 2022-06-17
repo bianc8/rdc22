@@ -156,7 +156,7 @@ int main() {
                 
                 // REFLECT
                 char refl[30];
-                sprintf(refl, "\n%d.%d.%d.%d\n%d",
+                sprintf(refl, "\r\n%d.%d.%d.%d\r\n%d",
                     *((unsigned char*) &remote.sin_addr.s_addr),
                     *((unsigned char*) &remote.sin_addr.s_addr+1),
                     *((unsigned char*) &remote.sin_addr.s_addr+2),
@@ -165,8 +165,8 @@ int main() {
                 );
                 size += strlen(refl) * sizeof(char);
 
-                // If the file is larger than 5KB (arbitrary amount, really), use the chunked transfer encoding
-                if (size > (1024 * 5)) {
+                // If the file is larger than 5KB, use the chunked transfer encoding
+                if (size > (1024*5)) {
                     sprintf(response, "HTTP/1.1 200 OK\r\nTransfer-Encoding:chunked\r\n\r\n");
                     write(rs, response, strlen(response));
 

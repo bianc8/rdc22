@@ -123,7 +123,7 @@ while (1){
 		he = gethostbyname(hostname);
 		printf("%d.%d.%d.%d\n",(unsigned char) he->h_addr[0],(unsigned char) he->h_addr[1],(unsigned char) he->h_addr[2],(unsigned char) he->h_addr[3]); 
 		if (-1 == ( s3 = socket(AF_INET, SOCK_STREAM, 0 ))) {
-		       printf("errno = %d\n",errno); perror("Socket Fallita"); exit(-1);
+			printf("errno = %d\n",errno); perror("Socket Fallita"); exit(-1);
 		}
 
 		server.sin_family = AF_INET;
@@ -137,13 +137,13 @@ while (1){
 		sprintf(request,"GET /%s HTTP/1.1\r\nHost:%s\r\nConnection:close\r\n\r\n", filename, hostname);
 		printf("%s\n",request);
 		write(s3,request,strlen(request));
-		while ( t=read(s3,buffer,2000))
-			write(s2,buffer,t);
+		while (t=read(s3, buffer, 2000))
+			write(s2, buffer, t);
 		close(s3);
 	} else if(!strcmp("CONNECT",method)) { // it is a connect  host:port 
 		hostname=url;
-		for(i=0;url[i]!=':';i++);
-			url[i]=0;
+		for(i=0; url[i] != ':'; i++);
+		url[i]=0;
 		port=url+i+1;
 
 		printf("hostname:%s, port:%s\n",hostname,port);

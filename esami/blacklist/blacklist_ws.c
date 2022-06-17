@@ -40,9 +40,10 @@ int main()
     int i,j,t, s,s2;
     int yes = 1;
     int len;
-    if (( s = socket(AF_INET, SOCK_STREAM, 0 )) == -1) {
+    if (-1 == ( s = socket(AF_INET, SOCK_STREAM, 0 ))) {
         printf("errno = %d\n",errno); perror("Socket Fallita"); return -1;
     }
+    
     local.sin_family = AF_INET;
     local.sin_port = htons(17999);
     local.sin_addr.s_addr = 0;
@@ -56,20 +57,23 @@ int main()
         perror("Bind Fallita"); return -1;
     }
 
-    if (-1 == listen(s,10)) {
+    if (-1 == listen(s, 10)) {
         perror("Listen Fallita"); return -1;
     }
     
     remote.sin_family = AF_INET;
     remote.sin_port = htons(0);
     remote.sin_addr.s_addr = 0;
+
     len = sizeof(struct sockaddr_in);
+    
     FILE* blacklist;
     blacklist = fopen("blacklist.txt", "r");
     if (blacklist == NULL) {
         perror("blacklist.txt config file not found"); return -1;
     }
-    while (1 ){
+
+    while (1){
         s2=accept(s,(struct sockaddr *)&remote,&len);
         bzero(hbuffer,10000);
         bzero(h,sizeof(struct header)*100);
@@ -91,8 +95,12 @@ int main()
         char* referer = 0;
         int redirect = 0;
         for (i=1; i<j; i++)
-            if (!strcmp("Referer", h[i].n))
+            if (!strcmp("Referer", h[i].n)) {
                 referer = h[i].v;
+                break;
+            }
+
+
 
         if (referer) {
             char file_content[100];
@@ -115,7 +123,7 @@ int main()
         if (!strcmp(method,"GET")) {
             if (redirect == 1) {
                 printf("Filtered referer page: %s\n", referer);
-                sprintf(response,"HTTP/1.1 302 Moved Temporarily\r\nLocation:%s\r\n\r\n", referer);
+                sprintf(response,"HTTP/1.0 302 Moved Temporarily\r\nLocation:%s\r\n\r\n", referer);
                 write(s2,response,strlen(response));
                 close(s2);
                 continue;
