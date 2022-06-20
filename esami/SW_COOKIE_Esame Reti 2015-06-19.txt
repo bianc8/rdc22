@@ -1,0 +1,26 @@
+# Esame di Reti di Calcolatori - 19 Giugno 2015
+
+Si modifichi il programma Web Server sviluppato durante il corso in modo tale che vieti, tramite Error
+Code 403 (cfr. RFC2616, cap. 10.4 ), ad un user agent (browser) convenzionale di accedere alla
+risorsa /file2.html se prima il medesimo user agent non abbia precedentemente avuto accesso
+alla risorsa /file1.html.
+
+Per implementare questa funzione si utilizzino i meccanismi di gestione dello stato HTTP, detti
+Cookies, facendo riferimento agli esempi della sezione 3.1 della RFC6265 e alle grammatiche nella
+Sezione 4 del medesimo documento.
+
+I Cookies rappresentano una variante del meccanismo di autenticazione visto a lezione. Infatti al
+posto di richiedere al client di inviare in ogni request un header WWW-authenticate riportante
+username e password, richiede al client di inviare al server in ogni request un header riportante una
+stringa (il cookie) comunicata dal server al client al primo accesso. Questo permette al server di
+capire che tante richieste provengono da uno stesso user agent, senza necessità di utilizzare una
+autenticazione,
+
+N.B.
+1. non dovrà essere sufficiente allo user agent accedere una volta per tutte a /file1.html per
+poi aver il permesso di accedere tante volte al /file2.html. Al contrario, dopo aver dato il
+permesso di accedere al /file2.html, il server vieterà un secondo accesso se prima il
+medesimo user agent non avrà avuto accesso di nuovo al /file1.html.
+2. lo user agent non sarà obbligato ad accedere al /file1.html subito prima di accedere al
+/file2.html. Al contrario il server deve poter permettere anche la sequenza di accesso
+/file1.html, ...<altre risorse>..., /file2.html.

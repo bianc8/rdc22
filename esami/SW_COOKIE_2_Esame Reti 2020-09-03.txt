@@ -1,0 +1,28 @@
+# Esame di Reti di Calcolatori - 3 Settembre 2020
+
+Si modifichi il programma Web Server sviluppato durante il corso in modo tale che vieti, tramite
+opportuno codice di errore (cfr. RFC2616, cap. 10.4 ), ad un user agent (browser) convenzionale di
+accedere alla risorsa /file2.html se prima il medesimo user agent non abbia precedentemente
+avuto accesso alla risorsa /file1.html.
+
+Per implementare questa funzione si utilizzino i meccanismi di gestione dello stato HTTP, detti
+Cookies, facendo riferimento agli esempi della sezione 3.1 della RFC6265 e alle grammatiche nella
+Sezione 4 del medesimo documento.
+
+Il meccanismo dei Cookie può essere visto come una variante del meccanismo di autenticazione visto
+a lezione, in quanto, al posto di richiedere al client di includere in ogni request l’header
+WWW-authenticate riportante credenziali (username e password) precedentemente registrate sul
+server, similmente richiede al client di includere, in ogni request, l’header Cookie riportante una il
+nome e il valore di una variabile di stato comunicata dal server al client al primo accesso. Questo
+permette al server di capire che tante richieste provengono da uno stesso user agent e condividono
+uno stesso stato, senza necessità di gestire la registrazione di utenti.
+N.B. lo user agent non sarà obbligato ad accedere al /file1.html subito prima di accedere al
+/file2.html. Al contrario il server deve poter permettere anche la sequenza di accesso
+/file1.html, ...<altre risorse>..., /file2.html.
+  
+## Agli studenti più preparati si richiede un requisito ulteriore:
+  
+Non sarà sufficiente allo user agent accedere una volta per tutte a /file1.html per poi aver il
+permesso di accedere tante volte al /file2.html. Al contrario, dopo aver dato il permesso di
+accedere al /file2.html, il server vieterà un secondo accesso se prima il medesimo user agent
+non avrà avuto accesso di nuovo al /file1.html.
