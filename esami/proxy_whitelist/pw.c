@@ -170,23 +170,21 @@ while (1){
                 break;
             }
         }
-        
         // if blocked, close connection
         if (blocked) {
             printf("Blocked client ip\n");
             sprintf(response,"HTTP/1.1 401 Unauthorized\r\nContent-Length:0\r\n\r\n");
             write(s2,response,strlen(response));
             break;
-        }
-        
+        }        
         
         char hserver[10000];
         char buffer_cp[1024*1024];
+        int length=0;
         
         bzero(buffer_cp, 1024*1024);
         bzero(hserver,10000);
         bzero(hs, 100 * sizeof(struct header));
-        int length=0;
         // read headers from remote server
         for (i=0,j=0; t = read(s3, buffer_cp+i, 1); i++) {
             printf("TTTT---------------------- %s\n", buffer_cp+i);
@@ -231,9 +229,6 @@ while (1){
             write(s2,response,strlen(response));
             break;
         }
-        
-        
-    
         close(s3);
     } else if(!strcmp("CONNECT",method)) { // it is a connect  host:port 
         hostname=url;
