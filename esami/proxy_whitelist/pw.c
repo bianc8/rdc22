@@ -46,9 +46,7 @@ struct hostent * he;
 int main()
 {
 char hbuffer[10000];
-char hserver[10000];
 char buffer[2000];
-char buffer_cp[2000];
 char * reqline;
 char * method, *url, *ver, *scheme, *hostname, *port;
 char * filename;
@@ -85,35 +83,19 @@ while (1){
 	
 	for (i=0,j=0; read(s2,hbuffer+i,1); i++) {
 		printf("%c",hbuffer[i]);
-		if(hbuffer[i]=='\n' && hbuffer[i-1]=='\r'){
-		    	hbuffer[i-1]=0; // Termino il token attuale
-			if (!h[j].n[0]) break;
-		     	h[++j].n=hbuffer+i+1;
-	      	}
+		if(hbuffer[i]=='\n' && hbuffer[i-1]=='\r') {
+            hbuffer[i-1]=0; // Termino il token attuale
+			if (!h[j].n[0])
+                break;
+            h[++j].n=hbuffer+i+1;
+        }
 		if (hbuffer[i]==':' && !h[j].v && j>0){
 			hbuffer[i]=0;
 			h[j].v = hbuffer + i + 2;
 		}
 	}
+
 	printf("Request line: %s\n",reqline);
-	for (i=1; i<j; i++)
-		printf("HEADERS: %s : %s\n", h[i].n, h[i].v);
-
-
-    // controllo se l'ip di s2 è in whitelist
-    char ip_client[30];
-    int blocked = 1;
-    sprintf(ip_client, "%d.%d.%d.%d",
-        *((unsigned char*) &remote.sin_addr.s_addr),
-        *((unsigned char*) &remote.sin_addr.s_addr+1),
-        *((unsigned char*) &remote.sin_addr.s_addr+2),
-        *((unsigned char*) &remote.sin_addr.s_addr+3)
-    );
-    for (int l=0; whitelist[l]; l++)      
-        if (!strncmp(ip_client, whitelist[l], strlen(whitelist[l])))
-            blocked = 0;
-
-	
 	method = reqline;
 	for(i=0;i<100 && reqline[i]!=' ';i++); reqline[i++]=0; 
 	url=reqline+i;
@@ -121,138 +103,186 @@ while (1){
 	ver=reqline+i;
 	for(;i<100 && reqline[i]!='\r';i++); reqline[i++]=0; 
 	
-	// Whitelist
-    if (blocked) {
-        sprintf(response,"HTTP/1.1 401 Unauthorized\r\nContent-Length:0\r\n\r\n");
-        write(s2,response,strlen(response));
-    } else {
-        if (!strcmp(method,"GET")){
-            scheme=url;
-            // GET http://www.aaa.com/file/file 
-            printf("url=%s\n",url);
-            for(i=0;url[i]!=':' && url[i] ;i++);
-            if(url[i]==':')
-                url[i++]=0;
-            else {
-                printf("Parse error, expected ':'");
-                exit(1);
-            }
-            if(url[i]!='/' || url[i+1] !='/') {
-                printf("Parse error, expected '//'");
-                exit(1);
-            }
-            i=i+2;
-            hostname=url+i;
-            for(;url[i]!='/'&& url[i];i++);	
-            if(url[i]=='/')
-                url[i++]=0;
-            else {
-                printf("Parse error, expected '/'");
-                exit(1);
-            }
-            
-            filename = url+i;
-            printf("Schema: %s, hostname: %s, filename: %s\n",scheme, hostname, filename); 
-
-            he = gethostbyname(hostname);
-            printf("%d.%d.%d.%d\n",(unsigned char) he->h_addr_list[0],(unsigned char) he->h_addr[1],(unsigned char) he->h_addr[2],(unsigned char) he->h_addr[3]); 
-            if (-1 == ( s3 = socket(AF_INET, SOCK_STREAM, 0 ))) {
-                printf("errno = %d\n",errno); perror("Socket Fallita"); exit(-1);
-            }
-
-            server.sin_family = AF_INET;
-            server.sin_port =htons(80);
-            server.sin_addr.s_addr = *(unsigned int *)(he->h_addr);
-
-            if(-1 == connect(s3,(struct sockaddr *) &server, sizeof(struct sockaddr_in))) {
-                perror("Connect Fallita"); exit(1);
-            }
-            
-            sprintf(request,"GET /%s HTTP/1.1\r\nHost:%s\r\nConnection:close\r\n\r\n", filename, hostname);
-            printf("%s\n",request);
-            write(s3,request,strlen(request));
-            
-            
-            // parsing header s3
-            /*
-            bzero(hserver,10000);
-            bzero(hs,100*sizeof(struct header));
-            bzero(buffer_cp, 2000);
-            for (i=0,j=0; read(s3, buffer_cp+i, 1); i++) {
-                strncpy(hserver+i, buffer_cp+i, 1);
-                printf("%c",hserver+i);
-                if(hserver[i]=='\n' && hserver[i-1]=='\r'){
-                    hserver[i-1]=0;
-                    if (!hs[j].n[0])
-                        break;
-                    hs[++j].n=hserver+i+1;
-                    }
-                if (hserver[i]==':' && !hs[j].v && j>0){
-                    hserver[i]=0;
-                    hs[j].v = hserver + i + 2;
-                }
-            }
-            for (int l=1; l<j; l++) {
-                printf("------s3 HEADERS: %s : %s\n", hs[l].n, hs[l].v);
-                //if (!strcmp("Content-Type", hs[l].n) && (!strcmp("text/plain", hs[l].v) || !strcmp("text/html", hs[l].v)))
-                //    blocked = 0;
-            }
-
-            printf("----------------------------------");
-            */
-            //if (!blocked)
-            while (t = read(s3, buffer, 2000))
-                write(s2, buffer_cp, i);
-        
-            close(s3);
-        } else if(!strcmp("CONNECT",method)) { // it is a connect  host:port 
-            hostname=url;
-            for(i=0; url[i] != ':'; i++);
-            url[i]=0;
-            port=url+i+1;
-
-            printf("hostname:%s, port:%s\n",hostname,port);
-            he = gethostbyname(hostname);
-            if (he == NULL) {
-                printf("Gethostbyname Fallita\n"); return 1;
-            }
-            
-            printf("Connecting to address = %u.%u.%u.%u\n", (unsigned char ) he->h_addr[0],(unsigned char ) he->h_addr[1],(unsigned char ) he->h_addr[2],(unsigned char ) he->h_addr[3]); 			
-            s3=socket(AF_INET,SOCK_STREAM,0);
-
-            if(s3==-1){
-                perror("Socket to server fallita"); return 1;
-            }
-            
-            server.sin_family=AF_INET;
-            server.sin_port=htons((unsigned short)atoi(port));
-            server.sin_addr.s_addr=*(unsigned int*) he->h_addr;			
-            t=connect(s3,(struct sockaddr *)&server,sizeof(struct sockaddr_in));		
-            if (t == -1){
-                perror("Connect to server fallita"); exit(0);
-            }
-            sprintf(response,"HTTP/1.1 200 Established\r\n\r\n");
-            write(s2,response,strlen(response));
-                // <==============
-            if(!(pid=fork())){ //Child
-                while(t=read(s2,request2,2000)){	
-                    write(s3,request2,t);
-                    //printf("CL >>>(%d)%s \n",t,hostname); //SOLO PER CHECK
-                }	
-                exit(0);
-            } else { //Parent	
-                while(t=read(s3,response2,2000)){	
-                    write(s2,response2,t);
-                    //printf("CL <<<(%d)%s \n",t,hostname);
-                }	
-                kill(pid,SIGTERM);
-                close(s3);
-            }	
-        } else {
-            sprintf(response,"HTTP/1.1 501 Not Implemented\r\n\r\n");
-            write(s2,response,strlen(response));
+    if (!strcmp(method,"GET")){
+        scheme=url;
+        // GET http://www.aaa.com/file/file 
+        printf("url=%s\n",url);
+        for(i=0;url[i]!=':' && url[i] ;i++);
+        if(url[i]==':')
+            url[i++]=0;
+        else {
+            printf("Parse error, expected ':'");
+            exit(1);
         }
+        if(url[i]!='/' || url[i+1] !='/') {
+            printf("Parse error, expected '//'");
+            exit(1);
+        }
+        i=i+2;
+        hostname=url+i;
+        for(;url[i]!='/'&& url[i];i++);	
+        if(url[i]=='/')
+            url[i++]=0;
+        else {
+            printf("Parse error, expected '/'");
+            exit(1);
+        }
+        
+        filename = url+i;
+        printf("Schema: %s, hostname: %s, filename: %s\n",scheme, hostname, filename); 
+
+        he = gethostbyname(hostname);
+        printf("%d.%d.%d.%d\n", (unsigned char) he->h_addr[0], (unsigned char) he->h_addr[1], (unsigned char) he->h_addr[2], (unsigned char) he->h_addr[3]); 
+        if (-1 == ( s3 = socket(AF_INET, SOCK_STREAM, 0 ))) {
+            printf("errno = %d\n",errno); perror("Socket Fallita"); exit(-1);
+        }
+
+        server.sin_family = AF_INET;
+        server.sin_port =htons(80);
+        server.sin_addr.s_addr = *(unsigned int *)(he->h_addr);
+
+        if(-1 == connect(s3,(struct sockaddr *) &server, sizeof(struct sockaddr_in))) {
+            perror("Connect Fallita"); exit(1);
+        }
+        
+        sprintf(request,"GET /%s HTTP/1.1\r\nHost:%s\r\nConnection:close\r\n\r\n", filename, hostname);
+        printf("%s\n",request);
+        write(s3,request,strlen(request));
+        
+        
+        // controllo se l'ip di s2 è in whitelist
+        char ip_client[30];
+        int content = 0;
+        int blocked = 1;
+        sprintf(ip_client, "%d.%d.%d.%d",
+            *((unsigned char*) &remote.sin_addr.s_addr),
+            *((unsigned char*) &remote.sin_addr.s_addr+1),
+            *((unsigned char*) &remote.sin_addr.s_addr+2),
+            *((unsigned char*) &remote.sin_addr.s_addr+3)
+        );
+        printf("Client Ip is %s\n", ip_client);
+
+        // check if client ip is allowed to transmit
+        for (int l=0; whitelist[l]; l++) {
+            if (!strncmp(ip_client, whitelist[l], strlen(whitelist[l]))) {
+                printf("Allowed client ip\n");
+                blocked = 0;
+                break;
+            }
+        }
+        
+        // if blocked, close connection
+        if (blocked) {
+            printf("Blocked client ip\n");
+            sprintf(response,"HTTP/1.1 401 Unauthorized\r\nContent-Length:0\r\n\r\n");
+            write(s2,response,strlen(response));
+            break;
+        }
+        
+        
+        char hserver[10000];
+        char buffer_cp[1024*1024];
+        
+        bzero(buffer_cp, 1024*1024);
+        bzero(hserver,10000);
+        bzero(hs, 100 * sizeof(struct header));
+        int length=0;
+        // read headers from remote server
+        for (i=0,j=0; t = read(s3, buffer_cp+i, 1); i++) {
+            printf("TTTT---------------------- %s\n", buffer_cp+i);
+            length += t;
+            strncpy(hserver+i, buffer_cp+i, t);
+
+            if(hserver[i]=='\n' && hserver[i-1]=='\r'){
+                hserver[i-1]=0;
+                if (!hs[j].n[0]) break;                    
+                hs[++j].n = hserver+i+1;
+            }
+            if (hserver[i]==':' && !hs[j].v && j>0){
+                hserver[i]=0;
+                hs[j].v = hserver + i + 2;
+                printf("%s : %s", hs[j].n, hs[j].v);
+            }
+        }
+        
+        // parsing headers from remote server
+        for (int l=1; l<j; l++) {
+            printf("------s3 HEADERS: %s : %s\n", hs[l].n, hs[l].v);
+            if (!strcmp("Content-Type", hs[l].n)) {
+                content = 1;
+                if (!strncmp("text/plain", hs[l].v, strlen("text/plain")) || !strncmp("text/html", hs[l].v, strlen("text/html")))
+                    blocked = 0;
+            }
+        }
+        
+        if (!blocked || !content) {
+            // write headers previously read
+            write(s2, buffer_cp, length);
+         
+            bzero(buffer, 2000);
+            // finish reading from remote server and write to client
+            while (t = read(s3, buffer, 2000))
+                write(s2, buffer, t);
+        }
+        // blocked content type
+        else {
+            printf("Blocked Content type\n");
+            sprintf(response,"HTTP/1.1 401 Unauthorized\r\nContent-Length:0\r\n\r\n");
+            write(s2,response,strlen(response));
+            break;
+        }
+        
+        
+    
+        close(s3);
+    } else if(!strcmp("CONNECT",method)) { // it is a connect  host:port 
+        hostname=url;
+        for(i=0; url[i] != ':'; i++);
+        url[i]=0;
+        port=url+i+1;
+
+        printf("hostname:%s, port:%s\n",hostname,port);
+        he = gethostbyname(hostname);
+        if (he == NULL) {
+            printf("Gethostbyname Fallita\n"); return 1;
+        }
+        
+        printf("Connecting to address = %u.%u.%u.%u\n", (unsigned char ) he->h_addr[0],(unsigned char ) he->h_addr[1],(unsigned char ) he->h_addr[2],(unsigned char ) he->h_addr[3]); 			
+        s3=socket(AF_INET,SOCK_STREAM,0);
+
+        if(s3==-1){
+            perror("Socket to server fallita"); return 1;
+        }
+        
+        server.sin_family=AF_INET;
+        server.sin_port=htons((unsigned short)atoi(port));
+        server.sin_addr.s_addr=*(unsigned int*) he->h_addr;			
+        t=connect(s3,(struct sockaddr *)&server,sizeof(struct sockaddr_in));		
+        if (t == -1){
+            perror("Connect to server fallita"); exit(0);
+        }
+        sprintf(response,"HTTP/1.1 200 Established\r\n\r\n");
+        write(s2,response,strlen(response));
+            // <==============
+        if(!(pid=fork())){ //Child
+            while(t=read(s2,request2,2000)){	
+                write(s3,request2,t);
+                //printf("CL >>>(%d)%s \n",t,hostname); //SOLO PER CHECK
+            }	
+            exit(0);
+        } else { //Parent	
+            while(t=read(s3,response2,2000)){	
+                write(s2,response2,t);
+                //printf("CL <<<(%d)%s \n",t,hostname);
+            }	
+            kill(pid,SIGTERM);
+            close(s3);
+        }	
+    } else {
+        sprintf(response,"HTTP/1.1 501 Not Implemented\r\n\r\n");
+        write(s2,response,strlen(response));
     }
+
 	close(s2);
 	exit(1);
 }

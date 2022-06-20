@@ -72,20 +72,21 @@ int main() {
 		if (fork())
 			continue;
 		if(s2 == -1){perror("Accept fallita"); exit(1);}
+		
 		bzero(hbuffer,10000);
 		bzero(h,100*sizeof(struct header));
 		reqline = h[0].n = hbuffer;
 		for (i=0,j=0; read(s2,hbuffer+i,1); i++) {
 			printf("%c",hbuffer[i]);
-		if(hbuffer[i]=='\n' && hbuffer[i-1]=='\r'){
-			hbuffer[i-1]=0; // Termino il token attuale
-		if (!h[j].n[0]) break;
-		h[++j].n=hbuffer+i+1;
-		}
-		if (hbuffer[i]==':' && !h[j].v && j>0){
-			hbuffer[i]=0;
-			h[j].v = hbuffer + i + 1;
-		}
+			if(hbuffer[i]=='\n' && hbuffer[i-1]=='\r'){
+				hbuffer[i-1]=0; // Termino il token attuale
+				if (!h[j].n[0]) break;
+				h[++j].n=hbuffer+i+1;
+			}
+			if (hbuffer[i]==':' && !h[j].v && j>0){
+				hbuffer[i]=0;
+				h[j].v = hbuffer + i + 1;
+			}
 		}
 
 		printf("Request line: %s\n",reqline);
