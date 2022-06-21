@@ -1,9 +1,16 @@
 /*
 Si modifichi il programma wp16.c in modo tale che:
-se l'indirizzo IP del client che vi si collega e' presente in una lista
-di indirizzi IP memorizzata nel programma wp16.c (massimo 4 indirizzi)
-allora il proxy consente solo il passaggio di file con contenuto testo o
-html.
+se l'indirizzo IP del client che vi si collega e' presente in una lista di indirizzi IP memorizzata nel programma wp16.c (massimo 4 indirizzi)
+allora il proxy consente solo il passaggio di file con contenuto testo o html.
+
+
+ da s2 controllo l'ip se è in blacklist
+    se è in blacklist:
+        da s3 controllo header Content-Type: text/plain o text/html
+            se è di quel tipo --> invia la response al client
+            se non è di quel tipo --> non invia la reponse al client (401 Unauthorized)
+    se non è in blacklist:
+        invia la response al client in ogni caso
 */
 #include<stdio.h>
 #include <stdlib.h>
@@ -21,7 +28,7 @@ html.
 
 
 
-char *whitelist[] = {"192.168.1.1", "192.168.1.2", "192.168.1.3", "127.0.0.1"};
+char *blacklist[] = {"192.168.1.1", "192.168.1.2", "192.168.1.3", "127.0.0.1"};
 
 int pid;
 struct sockaddr_in local, remote, server;
@@ -37,11 +44,6 @@ struct header {
 
 struct hostent * he;
 
-/*
- da s2 controllo l'ip se è in whitelist
- in s3 controllo header Content-Type: text/plain o text/html
- in s3 scrivo se non ho bloccato la richiesta
-*/
 
 int main()
 {
@@ -145,38 +147,29 @@ while (1){
             perror("Connect Fallita"); exit(1);
         }
         
-        sprintf(request,"GET /%s HTTP/1.1\r\nHost:%s\r\nConnection:close\r\n\r\n", filename, hostname);
+        sprintf(request, "GET /%s HTTP/1.1\r\nHost:%s\r\nConnection:close\r\n\r\n", filename, hostname);
         printf("%s\n",request);
         write(s3,request,strlen(request));
         
-        
-        // controllo se l'ip di s2 è in whitelist
+        // controllo se l'ip di s2 è in blacklist
         char ip_client[30];
-        int content = 0;
         int blocked = 1;
+        int filterData = 0;
         sprintf(ip_client, "%d.%d.%d.%d",
             *((unsigned char*) &remote.sin_addr.s_addr),
             *((unsigned char*) &remote.sin_addr.s_addr+1),
             *((unsigned char*) &remote.sin_addr.s_addr+2),
             *((unsigned char*) &remote.sin_addr.s_addr+3)
         );
-        printf("Client Ip is %s\n", ip_client);
 
         // check if client ip is allowed to transmit
-        for (int l=0; whitelist[l]; l++) {
-            if (!strncmp(ip_client, whitelist[l], strlen(whitelist[l]))) {
-                printf("Allowed client ip\n");
-                blocked = 0;
+        for (int l=0; blacklist[l]; l++) {
+            if (!strncmp(ip_client, blacklist[l], strlen(blacklist[l]))) {
+                printf("Client ip %s is allowed to send only text or html\n", ip_client);
+                filterData = 1;
                 break;
             }
         }
-        // if blocked, close connection
-        if (blocked) {
-            printf("Blocked client ip\n");
-            sprintf(response,"HTTP/1.1 401 Unauthorized\r\nContent-Length:0\r\n\r\n");
-            write(s2,response,strlen(response));
-            break;
-        }        
         
         char hserver[10000];
         char buffer_cp[1024*1024];
@@ -185,15 +178,18 @@ while (1){
         bzero(buffer_cp, 1024*1024);
         bzero(hserver,10000);
         bzero(hs, 100 * sizeof(struct header));
+
+        reqline = hs[0].n = hserver;    // IMPORTANT
+
         // read headers from remote server
         for (i=0,j=0; t = read(s3, buffer_cp+i, 1); i++) {
-            printf("TTTT---------------------- %s\n", buffer_cp+i);
             length += t;
             strncpy(hserver+i, buffer_cp+i, t);
 
             if(hserver[i]=='\n' && hserver[i-1]=='\r'){
                 hserver[i-1]=0;
-                if (!hs[j].n[0]) break;                    
+                if (!hs[j].n[0])
+                    break;                    
                 hs[++j].n = hserver+i+1;
             }
             if (hserver[i]==':' && !hs[j].v && j>0){
@@ -207,30 +203,34 @@ while (1){
         for (int l=1; l<j; l++) {
             printf("------s3 HEADERS: %s : %s\n", hs[l].n, hs[l].v);
             if (!strcmp("Content-Type", hs[l].n)) {
-                content = 1;
-                if (!strncmp("text/plain", hs[l].v, strlen("text/plain")) || !strncmp("text/html", hs[l].v, strlen("text/html")))
+                if (filterData) {
+                    if (!strncmp("text/plain", hs[l].v, strlen("text/plain")) || !strncmp("text/html", hs[l].v, strlen("text/html")))
+                        blocked = 0;
+                } else {
                     blocked = 0;
+                }
+                
             }
         }
-        
-        if (!blocked || !content) {
-            // write headers previously read
-            write(s2, buffer_cp, length);
-         
-            bzero(buffer, 2000);
-            // finish reading from remote server and write to client
-            while (t = read(s3, buffer, 2000))
-                write(s2, buffer, t);
-        }
-        // blocked content type
-        else {
+
+        if (!blocked) {
+                // write headers previously read
+                write(s2, buffer_cp, length);
+            
+                bzero(buffer, 2000);
+                // finish reading entity-body from remote server and write to client
+                while (t = read(s3, buffer, 2000))
+                    write(s2, buffer, t);
+        } else {
             printf("Blocked Content type\n");
-            sprintf(response,"HTTP/1.1 401 Unauthorized\r\nContent-Length:0\r\n\r\n");
+            sprintf(response,"HTTP/1.1 401 Unauthorized\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
             write(s2,response,strlen(response));
             break;
         }
         close(s3);
-    } else if(!strcmp("CONNECT",method)) { // it is a connect  host:port 
+    }
+    // it is a connect  host:port 
+    else if(!strcmp("CONNECT",method)) {
         hostname=url;
         for(i=0; url[i] != ':'; i++);
         url[i]=0;
