@@ -94,7 +94,12 @@ int main() {
 	
 	while (1) {
 		s2=accept(s,(struct sockaddr *)&remote,&len);
-		printf("Remote address: %.8X\n",remote.sin_addr.s_addr);
+		printf("Remote address: %d.%d.%d.%d\n",
+            *((unsigned char*) &remote.sin_addr.s_addr),
+            *((unsigned char*) &remote.sin_addr.s_addr+1),
+            *((unsigned char*) &remote.sin_addr.s_addr+2),
+            *((unsigned char*) &remote.sin_addr.s_addr+3)
+        );
 		if (fork())
 			continue;
 		if(s2 == -1){perror("Accept fallita"); exit(1);}
@@ -189,8 +194,8 @@ int main() {
                     }
                     else if (!strcmp("Content-Range", hs[l].n)) {
                         sscanf(hs[l].v+6, "%d-%d/%ld", &tmp1, &tmp2, &size);
-                        printf("\rDownloading %s: %.2f %%", filename, tmp2/(float)size*100);
-                        fflush(stdout);
+                        printf("Downloading %s: %.2f %%\n", filename, tmp2/(float)size*100);
+                        //fflush(stdout);
                     }
                 }
 
