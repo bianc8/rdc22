@@ -1,3 +1,30 @@
+/*
+Esame di Reti di Calcolatori - 13 Luglio 2021
+
+Si modifichi il programma del web client riportato nel file esame.c presente nella vostra cartella personale in modo tale che si comporti come segue 
+
+1)	il web client effettuerà a sua volta molte request al web server, ciascuna delle quali scaricherà un segmento dell’entity body della risorsa richiesto di lunghezza pari a 1000 bytes fino a che l’intero l’entity body risulterà scaricato (l’ultimo segmento avrà ovviamente una lunghezza ≤ 1000 bytes).
+
+Al fine di implementare la funzione, si faccia riferimento all’header Range dell’HTTP/1.1 definito nella RFC 2616: sezioni 14.35, 3.12, 14.16 .
+
+Per la sperimentazione collegarsi con il web client (configurato per utilizzare il proxy modificato) all’URL  http://88.80.187.84/immagine.jpg 
+
+
+EXAMPLE REQUESTLINE
+GET /immagine.jpg Host:88.80.187.84 Range:bytes=0-999
+== con le variabili usate nel programma
+GET /immagine.jpg Host:88.80.187.84 Range:bytes=range-range+rangeSize-1
+
+EXAMPLE Content-Range Header in RESPONSE
+Content-Range: bytes 0-1000/1674791
+== con le variabili usate nel programma
+Content-Range: bytes tmp1-tmp2/size
+
+Pseudocodice:
+1) itero su tanti range, apro un socket ad ogni richiesta, finche non ho scaricato la risorsa
+2) dalla response, leggo l'header Content-Range, estraggo la size della risorsa da scaricare
+*/ 
+
 #include <stdio.h>
 #include <string.h>  //strlen
 #include <sys/types.h>  // ""
@@ -66,7 +93,7 @@ int main() {
         }
 
         bzero(request, 100);
-        sprintf(request, "GET %s HTTP/1.1\r\nHost:%s\r\nRange: bytes=%d-%d\r\n\r\n", resourceName, hostname, range, range+rangeSize-1);
+        sprintf(request, "GET %s HTTP/1.1\r\nHost: %s\r\nRange: bytes=%d-%d\r\n\r\n", resourceName, hostname, range, range+rangeSize-1);
         //printf("request: %s\n", request);
 
         if (-1 == write(s, request, strlen(request))) {
