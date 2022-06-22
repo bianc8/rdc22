@@ -54,17 +54,17 @@ int main() {
 	FILE * fin;
 	int c;
 	int n;
-	int i,j,t, l,k, s,s2,s3, bodylen;
+	int i,j,t, l,k, s,s2,s3, bodylen, indexBuf = 0;
 	int yes = 1;
 	int len;
 
     // RANGE
     int range = 0;
-    int rangeSize = 50000;
+    int rangeSize = 100000;
     // Content-Range: tmp1-tmp2/size
     int tmp1,   // range
         tmp2;   // range + rangeSize - 1
-    long size = 50000;   // total resource size
+    long size = 100000;   // total resource size
 
 	if (( s = socket(AF_INET, SOCK_STREAM, 0 )) == -1) {
 		printf("errno = %d\n",errno); perror("Socket Fallita"); return -1;
@@ -122,19 +122,22 @@ int main() {
 		for(;i<100 && reqline[i]!=' ';i++); reqline[i++]=0; 
 		ver=reqline+i;
 		for(;i<100 && reqline[i]!='\r';i++); reqline[i++]=0; 
+
 		if ( !strcmp(method,"GET")){
 			scheme=url;
             // GET http://www.aaa.com/file/file
 			printf("url=%s\n",url);
 			for(i=0;url[i]!=':' && url[i] ;i++);
-			if(url[i]==':') url[i++]=0;
+			if(url[i]==':')
+                url[i++]=0;
 			else {printf("Parse error, expected ':'"); exit(1);}
-			if(url[i]!='/' || url[i+1] !='/') 
-			{printf("Parse error, expected '//'"); exit(1);}
-			i=i+2; hostname=url+i;
+			if(url[i]!='/' || url[i+1] !='/') {printf("Parse error, expected '//'"); exit(1);}
+			i=i+2;
+            hostname=url+i;
 			for(;url[i]!='/'&& url[i];i++);	
-			if(url[i]=='/') url[i++]=0;
-			else {printf("Parse error, expected '/'"); exit(1);}
+			if(url[i]=='/')
+                url[i++]=0;
+			else { printf("Parse error, expected '/'"); exit(1);}
 			filename = url+i;
 			printf("Schema: %s, hostname: %s, filename: %s\n",scheme,hostname,filename); 
 
@@ -192,16 +195,15 @@ int main() {
                 }
 
                 // download file to client
-			    for (len=0; len<bodylen && (n=read(s3, buffer+len, bodylen-len)); len += n);
-                fwrite(buffer, bodylen, 1, fout);
+			    for (len=0; len<bodylen && (n=read(s3, buffer+indexBuf+len, bodylen-len)); len += n);
+                indexBuf += len;
 			    close(s3);
             }
             printf("\n\n");
             // write to client the downloaded filename
-            sprintf(response,"HTTP/1.1 200 Ok\r\nContent-Type:image/jpg\r\nContent-Length:%ld\r\nConnection:close\r\n\r\n", size+85);
-            printf("response %d size %ld", strlen(response), size);
+            sprintf(response,"HTTP/1.1 200 Ok\r\nContent-Type:image/jpg\r\nContent-Length:%ld\r\nConnection:close\r\n\r\n", indexBuf);
             write(s2, response, strlen(response));
-            write(s2, buffer, size);
+            write(s2, buffer, indexBuf);
         }
 		else if(!strcmp("CONNECT",method)) { // it is a connect  host:port 
 			hostname=url;
