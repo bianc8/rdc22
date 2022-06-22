@@ -151,12 +151,12 @@ int main() {
 			printf("%s\n",request);
 			
 			write(s3,request,strlen(request));
-			while ( t=read(s3,buffer,2000))
+			while (t = read(s3,buffer,2000))
 				write(s2,buffer,t);
 			close(s3);
 		}
-		// check method CONNECT
-		else if(!strcmp("CONNECT",method)) { // it is a connect  host:port 
+		// check method CONNECT https
+		else if(!strcmp("CONNECT",method)) { // it is a connect host:port 
 			hostname=url;
 			// GET http://www.aaa.com/file/file 
 			for(i=0;url[i]!=':';i++);
@@ -192,26 +192,26 @@ int main() {
 			
 			// <==============
 			if (!(pid=fork())) { //Child
-				while(t=read(s2,request2,2000)) {
-					write(s3,request2,t);
+				while(t=read(s2, request2, 2000)) {
+					write(s3, request2, t);
 					//printf("CL >>>(%d)%s \n",t,hostname); //SOLO PER CHECK
 				}	
 				exit(0);
 			}
 			//Parent	
 			else {
-				while(t=read(s3,response2,2000)){	
-					write(s2,response2,t);
+				while(t=read(s3, response2, 2000)){	
+					write(s2, response2, t);
 					//printf("CL <<<(%d)%s \n",t,hostname);
 				}
-				kill(pid,SIGTERM);
+				kill(pid, SIGTERM);
 				close(s3);
 			}	
 		}
 		// For other method than GET/CONNECT
 		else {
-			sprintf(response,"HTTP/1.1 501 Not Implemented\r\n\r\n");
-			write(s2,response,strlen(response));
+			sprintf(response,"HTTP/1.1 501 Not Implemented\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+			write(s2, response, strlen(response));
 		}
 		close(s2);
 		exit(1);

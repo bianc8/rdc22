@@ -3,6 +3,9 @@ Si modifichi il programma wp16.c in modo tale che:
 se l'indirizzo IP del client che vi si collega e' presente in una lista di indirizzi IP memorizzata nel programma wp16.c (massimo 4 indirizzi)
 allora il proxy consente solo il passaggio di file con contenuto testo o html.
 
+s
+s2 client -> proxy
+s3 proxy -> server remoto
 
  da s2 controllo l'ip se è in blacklist
     se è in blacklist:
@@ -80,7 +83,7 @@ while (1){
 	if(s2 == -1){perror("Accept fallita"); exit(1);}
 	
 	bzero(hbuffer,10000);
-	bzero(h,100*sizeof(struct header));
+	bzero(h, 100*sizeof(struct header));
 	reqline = h[0].n = hbuffer;
 	
 	for (i=0,j=0; read(s2,hbuffer+i,1); i++) {
@@ -170,7 +173,7 @@ while (1){
                 break;
             }
         }
-        
+
         char hserver[10000];
         char buffer_cp[1024*1024];
         int length=0;
@@ -227,6 +230,7 @@ while (1){
             write(s2,response,strlen(response));
             break;
         }
+        
         close(s3);
     }
     // it is a connect  host:port 
