@@ -66,14 +66,13 @@ int main() {
     int j = 0;  // scorre elementi in header
     int i = 0;  // scorre caratteri
 
-
+    // RANGE
     int range = 0;
     int rangeSize = 1000;
     // Content-Range: tmp1-tmp2/size
     int tmp1,   // range
         tmp2;   // range + rangeSize - 1
     long size = 1000;   // total resource size
-
 
     // iterate ranges, must open new socket each range
     for(range=0; range < size; range += rangeSize) {
@@ -132,7 +131,6 @@ int main() {
         if (n == -1) {
             perror("Read fallita"); return -1;
         }
-        response[len] = 0;
         fwrite(response, bodylen, 1, fout);
         close(s);
     }
