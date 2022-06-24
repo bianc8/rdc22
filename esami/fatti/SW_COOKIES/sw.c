@@ -17,19 +17,19 @@ Non sarà sufficiente allo user agent accedere una volta per tutte a /file1.html
 403 Forbidden\r\nLocation:/file1.html\r\n
 
 
-Ad ogni richiesta a file1.html viene aggiunto un nuovo cookie x=vieneDa1.
+Ad ogni richiesta a file1.html viene aggiunto un nuovo cookie daDoveProviene=provieneDa1.
 		
-Ad ogni richiesta a file2.html viene controllato se esiste il cookie x e se ha valore "vieneDa1"
+Ad ogni richiesta a file2.html viene controllato se esiste il cookie daDoveProviene e se ha valore "provieneDa1"
 
 Quando il server riceve una richiesta;
-1) se tra gli header della richiesta c'è l'header Cookie: x=yz;
+1) se tra gli header della richiesta c'è l'header Cookie: daDoveProviene=xyz;
     1.a) e se la risorsa richiesta è file2.html
-		verifica che il cookie sia x=vieneDa1
+		verifica che il cookie sia daDoveProviene=provieneDa1
         1.a.1) se l'user agent è bloccato --> invia 403 Forbidden Location: /file1.html
         1.a.2) se non è bloccato --> invia la risorsa richiesta e nelle successive richieste a file2.html, non terrà conto del cookie
 
 2) se non è presente l'header Cookie nella richiesta
-    2.a) Aggiungi il cookie
+    2.a) Aggiungi il cookie daDoveProviene=provieneDa1
     2.b) Se la risorsa richiesta è file1.html  --> Invia la risorsa richiesta
     2.c) Se la risorsa richiesta è file2.html --> Invia 403 Forbidden Location: /file1.html
 */
