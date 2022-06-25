@@ -35,31 +35,21 @@ This .vimrc config file allow you to:
 <summary>Click to expand!</summary>
 
 <br>
+
 Search is **UNIDIRECTIONAL** but when the search reach one end of the file, pressing **n** continue the search starting from the other end of the file.
 
-## Search from the current line **forward** using **/**
+## Search from the current line **forward**/**backwards**
+
+To search forward use /
+
+To search bacward use ?
 
 x es:
 
-    ESC (to exit Insert mode)
+    ESC (go into Command mode)
 
-    /query
-
-    ENTER (to stop writing in the search query)
-
-    (now all search results of the query are highlighted)
-
-    n (to move to next occurence of search result)
-
-    ESC (to exit Search mode)
-
-## Search from the current line **backwards** using **?**
-
-x es:
-
-    ESC (to exit Insert mode)
-
-    ?query
+    /query (forward)
+    ?query (backward)
 
     ENTER (to stop writing in the search query)
 
@@ -75,22 +65,16 @@ x es:
 <details>
 <summary>Click to expand!</summary>
 
-## Compile
+To Compile press F8
 
-    ESC (to exit Insert mode)
+To Execute press F9
+
+    ESC (go into Command mode)
 
     F8 (compile shortcut)
-
-    CTRL+C (to exit compilation) 
-
-    Enter (to re-enter in vim)
-
-## Execute
-    ESC (to exit Insert mode)
-
     F9 (execute shortcut)
 
-    CTRL+C (to stop the executable) 
+    CTRL+C (to exit compilation/executable) 
 
     Enter (to re-enter in vim)
 </details>
@@ -101,11 +85,12 @@ x es:
 <details>
 <summary>Click to expand!</summary>
 
-    ESC (to exit Insert mode)
+    ESC (go into Command mode)
 
-    CTRL+SHIFT+PAGE UP/DOWN (to move line up/down)
+    CTRL+SHIFT+PAGE UP  (to move line up)
+    CTRL+SHIFT+PAGE DOWN (to move line down)
 
-    i (to re-enter Insert mode)
+    i (go into Insert mode)
 </details>
 
 
@@ -115,7 +100,7 @@ x es:
 
     Select with the mouse the text you want to copy
     [ALTERNATIVE
-        ESC (to exit Insert mode)
+        ESC (go into Command mode)
         V100G (to select from current line to line 100, included, using Visual mode)]
 
     y (to Copy/yank)
@@ -129,7 +114,7 @@ x es:
 <details>
 <summary>Click to expand!</summary>
     
-    ESC (to exit Insert mode)
+    ESC (go into Command mode)
 
     u (to Undo)
 </details>
