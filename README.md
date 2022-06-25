@@ -56,8 +56,8 @@ x es:
 
     (now all search results of the query are highlighted)
 
-    n (to move to the NEXT occurence of the search result)
-    N (to move to the PREVIOUS occurence of the search result)
+    n (to move to the NEXT occurence in the search results)
+    N (to move to the PREVIOUS occurence in the search results)
 
     ESC (to exit Search mode)
 </details>
