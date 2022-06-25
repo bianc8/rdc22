@@ -1,6 +1,7 @@
 # How to use Vim and other tips
 
-Copy the .vimrc file into your home directory on the server using Unix's **scp command**.
+## Preconditions
+**Copy the .vimrc file into your home directory on the server using Unix's scp command**.
 
 Remember to change MATRICOLA with your Unipd Student ID.
 
@@ -9,7 +10,7 @@ Login using your SSH credentials.
     scp -O ./.vimrc MATRICOLA@88.80.187.84:/home/MATRICOLA/.vimrc 
 
 ## Content of .vimrc
-This .vimrc config file allow you to:
+This .vimrc config file allows you to:
 - **Use your mouse**: scrolling wheel to move up or down, click and point
 - **Move line Up/Down** using Ctrl+Shift+Up/Down
 - Press F8 to **Compile** the program **without exiting Vim**
@@ -36,7 +37,7 @@ This .vimrc config file allow you to:
 
 <br>
 
-Search is **UNIDIRECTIONAL** but when the search reach one end of the file, pressing **n** continue the search starting from the other end of the file.
+Search is **UNIDIRECTIONAL** but when the search reach one end of the file, pressing **n** continues the search, starting from the other end of the file.
 
 ## Search from the current line **forward**/**backwards**
 
