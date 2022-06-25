@@ -20,7 +20,7 @@ This .vimrc config file allow you to:
 <summary>Click to expand!</summary>
 
 - Replace tabs with 3 spaces
-- Highlight matching parantheses
+- Highlight matching parentheses
 - Auto indent on brackets
 - Show line number
 - Highlight current line
@@ -34,6 +34,7 @@ This .vimrc config file allow you to:
 <details>
 <summary>Click to expand!</summary>
 
+<br>
 Search is **UNIDIRECTIONAL** but when the search reach one end of the file, pressing **n** continue the search starting from the other end of the file.
 
 ## Search from the current line **forward** using **/**
@@ -96,7 +97,7 @@ x es:
 
 
 
-# How to move current line Up or Down in VIM:
+# How to Move current line Up or Down in VIM:
 <details>
 <summary>Click to expand!</summary>
 
@@ -108,16 +109,19 @@ x es:
 </details>
 
 
-# How to select, copy/cut and paste in VIM:
+# How to Select, Copy/Cut and Paste in VIM:
 <details>
 <summary>Click to expand!</summary>
 
     Select with the mouse the text you want to copy
+    [ALTERNATIVE
+        ESC (to exit Insert mode)
+        V100G (to select from current line to line 100, included, using Visual mode)]
 
-    y (to copy/yank)
-    [ALTERNATIVE d (to cut)]
+    y (to Copy/yank)
+    d (to Cut/delete)
 
-    p (to paste after the cursor)
+    p (to Paste after the cursor)
 </details>
 
 
