@@ -51,18 +51,13 @@ struct header {
   char * v;
 } h[100];
 
-struct dict {
-    char *cookie;
-    int blocked;
-} d[4];
-
-
 int main()
 {
-	int deleted = 0;
+	int blocked = 0;
 
 char hbuffer[10000];
-char * reqline, *method, *url, *ver;
+char * reqline;
+char * method, *url, *ver;
 char * filename;
 FILE * fin;
 int c;
@@ -103,15 +98,6 @@ for (i=0,j=0; read(s2,hbuffer+i,1); i++) {
     h[j].v = hbuffer + i + 2;
   }
  }
- 	char *cookieKey, *cookieValue;
-	for (i=0; i<j; i++) {
-		if (!strcmp(h[i].n, "Cookie")) {
-			cookieKey = h[i].v;
-			for (k=0; cookieKey[k] != '='; k++); cookieKey[k++]=0;
-			cookieValue = h[i].v + k;
-			printf("COOKIE %s : %s\n", cookieKey, cookieValue);
-		}
-	}
 
 	if(len == -1) { perror("Read Fallita"); return -1;}
 	method = reqline;
@@ -120,7 +106,6 @@ for (i=0,j=0; read(s2,hbuffer+i,1); i++) {
 	for(; reqline[i]!=' ';i++); reqline[i++]=0; 
 	ver=reqline+i;
 	for(; reqline[i]!=0;i++); reqline[i++]=0; 
-	
 	if ( !strcmp(method,"GET")){
 		filename = url+1;
 		fin=fopen(filename,"rt");
@@ -131,32 +116,47 @@ for (i=0,j=0; read(s2,hbuffer+i,1); i++) {
 			}
 		else{
 			if (!strncmp(filename, "file2.html", strlen("file2.html"))) {
-				if (!strcmp(cookieKey, "daDoveProviene")) {
-					if (!deleted && !strcmp("provieneDa1", cookieValue)) {
-						deleted = 1;
-						sprintf(response,"HTTP/1.1 200 OK\r\n\r\n");
-						write(s2,response,strlen(response));
-						while ( (c = fgetc(fin))!=EOF) write(s2,&c,1);
-					} else {
-						sprintf(response,"HTTP/1.1 403 Forbidden\r\nLocation: ./file1.html\r\n\r\n");	
-						write(s2,response,strlen(response));
+				// parse Cookie header to extract cookieKey and CookieValue
+				char *cookieKey, *cookieValue;
+				for (i=0; i<j; i++) {
+					if (!strcmp(h[i].n, "Cookie")) {
+						cookieKey = h[i].v;
+						for (k=0; cookieKey[k] != '='; k++);
+						cookieKey[k++]=0;
+						cookieValue = h[i].v + k;
+						break;
 					}
 				}
-			} else {
-				if (!strncmp(filename, "file1.html", strlen("file1.html"))) {
-					sprintf(response, "HTTP/1.1 200 OK\r\nSet-Cookie: daDoveProviene=%s\r\n\r\n", "provieneDa1");
-					deleted = 0;
-				} else {
-					sprintf(response,"HTTP/1.1 200 OK\r\n\r\n");
+				// request blocked to file2.html
+				if (blocked || strcmp(cookieKey, "daDoveProviene") || strcmp(cookieValue, "provieneDa1")) {
+					printf("Blocked request\n");
+					sprintf(response,"HTTP/1.1 403 Forbidden\r\n\r\n<!DOCTYPE html><html><body><p>User agent not allowed</p><br/><a href=\"./file1.html\">Please visit page ./file1 to gain access</a></body></html>");	
+					write(s2,response,strlen(response));
+					continue;
 				}
-				write(s2,response,strlen(response));
-				while ( (c = fgetc(fin))!=EOF) write(s2,&c,1);	
+				// request not blocked to file2.html
+				else {
+					printf("Serve request because cookie %s=%s and request not blocked\n", cookieKey, cookieValue);
+					sprintf(response,"HTTP/1.1 200 OK\r\n\r\n");
+					blocked = 1;
+				}	
+			} 
+			// request to file1 --> Set-Cookie
+			else if (!strncmp(filename, "file1.html", strlen("file1.html"))) {
+				printf("Requested file1.html, cookie setted\n");
+				sprintf(response, "HTTP/1.1 200 OK\r\nSet-Cookie: daDoveProviene=%s\r\n\r\n", "provieneDa1");
+				blocked = 0;
+			} else {
+				sprintf(response,"HTTP/1.1 200 OK\r\n\r\n");
 			}
+			write(s2,response,strlen(response));
+			while ( (c = fgetc(fin))!=EOF) write(s2,&c,1);	
+		
 			fclose(fin);
 			}
 	}
 	else {
-		sprintf(response,"HTTP/1.1 501 Not Implemented\r\n\r\n");
+			sprintf(response,"HTTP/1.1 501 Not Implemented\r\n\r\n");
     	write(s2,response,strlen(response));
 	}
 	close(s2);
