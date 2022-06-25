@@ -29,7 +29,6 @@ This .vimrc config file allow you to:
 - Highlight search results
 </details>
 
-<br>
 
 # How to search in VIM:
 <details>
@@ -70,7 +69,6 @@ x es:
     ESC (to exit Search mode)
 </details>
 
-<br>
 
 # How to Compile and Execute without exiting VIM:
 <details>
@@ -97,7 +95,6 @@ x es:
 </details>
 
 
-<br>
 
 # How to move current line Up or Down in VIM:
 <details>
@@ -110,7 +107,6 @@ x es:
     i (to re-enter Insert mode)
 </details>
 
-<br>
 
 # How to select, copy/cut and paste in VIM:
 <details>
@@ -124,7 +120,6 @@ x es:
     p (to paste after the cursor)
 </details>
 
-<br>
 
 # If you've made an error, CTRL+z is u:
 <details>
@@ -135,7 +130,6 @@ x es:
     u (to Undo)
 </details>
 
-<br>
 
 # If you've pressed CTRL + s and now the screen is frozen, press CTRL + q (to unfreeze screen)
 <details>
