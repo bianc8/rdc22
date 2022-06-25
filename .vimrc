@@ -40,14 +40,6 @@ set ignorecase
 "search case sensitive if case letters are entered
 set smartcase
 
-"--- Folding ------
-"enable folding
-set foldenable
-"open most folds, set to 0 all folds are closed, sett to 99 open all folds 
-set foldlevelstart=99
-"fold based on indent level
-set foldmethod=indent
-
 "---- Swap line up and down ----
 nnoremap <C-S-Up> <Up>"add"ap<Up>
 nnoremap <C-S-Down> "add"ap
