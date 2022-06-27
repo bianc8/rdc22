@@ -1,9 +1,8 @@
 # Important RFC
 
-<a href="https://datatracker.ietf.org/doc/html/rfc1945" target="_blank">RFC 1945 HTTP/1.0</a>
+[RFC 1945 HTTP/1.0](https://datatracker.ietf.org/doc/html/rfc1945)
 
-<a href="https://datatracker.ietf.org/doc/html/rfc2616" target="_blank">RFC 2616 HTTP/1.1</a>
-
+[RFC 2616 HTTP/1.1](https://datatracker.ietf.org/doc/html/rfc2616)
 
 # Functions
 
