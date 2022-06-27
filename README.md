@@ -229,8 +229,9 @@ Login using your SSH credentials.
 This .vimrc config file allows you to:
 - **Use your mouse**: scrolling wheel to move up or down, click and point
 - **Move line Up/Down** using Ctrl+Shift+Up/Down
-- Press F8 to **Compile** the program **without exiting Vim**
-- Press F9 to **Execute** the program **without exiting Vim**
+- Press F8 to **Compile** the **C** program **without exiting Vim**
+- Press F9 to **Execute** the **C** program **without exiting Vim**
+- Auto close brackets
 
 ## Other configurations:
 - Replace tabs with 3 spaces
