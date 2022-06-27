@@ -177,7 +177,7 @@ for (i=1; i<j; i++) {
       } else {
          printf("NON AUTH\n");
          sprintf(response,"HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate:basic\r\nContent-Length:0\r\n\r\n");
-    	   write(s2, response, strlen(response));
+		 write(s2, response, strlen(response));
          close(s2);
          continue;
       }
@@ -221,7 +221,7 @@ for (i=1; i<j; i++) {
 		sprintf(request,"GET /%s HTTP/1.1\r\nHost:%s\r\nConnection:close\r\n\r\n",filename,hostname);
 		printf("%s\n",request);
 		write(s3,request,strlen(request));
-		while ( t=read(s3,buffer,2000))
+		while (t = read(s3,buffer,2000))
 			write(s2,buffer,t);
 		close(s3);
 		}

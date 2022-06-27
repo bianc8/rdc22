@@ -15,14 +15,16 @@ server, altrimenti dovrà accedere alla copia in cache.
 Pseudocodice:
 1.a) If resource is already present in dir ./cache/
     GET www.example.com If-Modified-Since:httpDate(timestamp)
-1.b) Else
-    GET www.example.com If-Modified-Since:0
-2) Guardo la risposta
-    2.a) HTTP\1.1 304 Not Modified --> return cached file
-    2.b) HTTP\1.1 200 OK --> download the resource and save it in dir ./cache/
+    --> Response
+    HTTP/1.1 304 Not Modified --> return cached
+1.b) Else resource not present
+    GET www.example.com
+--> Response
+Else) HTTP/1.1 200 OK --> Download the resource and save it in dir ./cache/
 */
 
 #define _XOPEN_SOURCE       // strptime(3)
+
 
 #include <stdio.h>
 #include <string.h>
@@ -94,9 +96,6 @@ int main() {
     printf("Resolving IP for %s...\n", hostname);
     remoteIP = gethostbyname(hostname);
     
-    /// 1) request HEAD for the resource
-    sprintf(request, "HEAD %s HTTP/1.0\r\nHost:%s\r\n\r\n", resourceName, hostname);
-
     // Assign the required information to the remote address object (?)
     remote.sin_family = AF_INET;
     remote.sin_port = htons(80);
@@ -108,8 +107,28 @@ int main() {
     }
     /// 2) If resource is already present in dir ./cache/
     FILE* cached;
+    
+    // HTTP DATE
+    // Thu, 17 Oct 2019 07:18:26 GMT
+    // %a, %d %b %Y %T=%H:%M:%S GMT=%Z 
+    char* format = "%a, %d %b %Y %T %Z";     // man 3 strptime
+
     if ((cached = fopen(cacheName, "r")) != NULL) { 
         printf("\n----->Resource already downloaded, verify cache\n");
+        
+        // read first line of cached file, contains timestamp of download date
+        // assume timestamp is a 10 character epoch/timestamp (valid until Saturday 20 November 2286)
+        char cacheTime[11];
+        fread(cacheTime, sizeof(char), 10, cached);
+        cacheTime[10] = 0;
+        time_t epochSaved = atoi(cacheTime);
+        struct tm tmSaved = *gmtime(&epochSaved);
+        char httpDateCache[30];
+        strftime(httpDateCache, sizeof(httpDateCache), format, &tmSaved);
+        printf("Last time of download is %s\n", httpDateCache);
+        
+        /// 1) request HEAD for the resource
+        sprintf(request, "HEAD %s HTTP/1.1\r\nHost:%s\r\nIf-Modified-Since:%s\r\n\r\n", resourceName, hostname, httpDateCache);
 
         write(s, request, strlen(request));
         int headersCount = 0;
@@ -131,34 +150,34 @@ int main() {
         // read the Last-Modified header
         int bodyLength = 0;
         char* lastModified = 0;
+        int notModified = 0;
+        if (!strcmp("304 Not Modified", headers[0].n+9)) {
+            printf("Not modified, serve directly from cache\n");
+            notModified = 1;
+        } else {
+           printf("Resource modified, need to be downloaded\n");
+        }
+
         for (int i=1; i<headersCount; i++)
             if (!strcmp("Last-Modified", headers[i].n))
                 lastModified = headers[i].v;
+
         printf("Last-Modified date %s\n", lastModified);
-
-        // HTTP DATE
-        // Thu, 17 Oct 2019 07:18:26 GMT
-        char* format = "%a, %d %b %Y %T GMT";     // man 3 strptime
+        // Last-Modified to epoch [ms]
         struct tm* httpTime = malloc(sizeof(struct tm));
-        strptime(lastModified, format, httpTime);
-        time_t epochRemote = mktime(httpTime);
+        strptime(lastModified, format, httpTime); // string -> tm
+        time_t epochRemote = mktime(httpTime); // tm -> epoch
         
-        // read first line of cached file, contains timestamp of download date
-        // assume timestamp is a 10 character string (valid until Saturday 20 November 2286)
-        char cacheTime[10];
-        fread(cacheTime, sizeof(char), 10, cached);
-        time_t epochSaved = atoi(cacheTime);
-
         printf("epoch Remote %lu\n", (unsigned long)epochRemote);
         printf("epoch Cached %lu\n", (unsigned long)epochSaved);
 
         /// 2.a) if date in Last-Modified header is <= than cached file timestamp, the cache is valid
-        if (epochRemote <= epochSaved) {
+        if (notModified || (epochRemote <= epochSaved)) {
             printf("\n----->Serve from cache!!!");
             int c=0;
             char* fileBuff[1024*5];
             for (int l=0; (c = fread(fileBuff, sizeof(char), 1024*5, cached)) > 0; l += c)
-                printf("%s\n", fileBuff);   // show to the user the cached file
+               printf("%s\n", fileBuff);   // show to the user the cached file
     
             fclose(cached);
             return 0;
@@ -171,10 +190,13 @@ int main() {
     char* lastModified = 0;
     
     /// 3.a) download resource
-    sprintf(request, "GET %s HTTP/1.0\r\nHost:%s\r\n\r\n", resourceName, hostname);
+    sprintf(request, "GET %s HTTP/1.1\r\nHost:%s\r\n\r\n", resourceName, hostname);
     write(s, request, strlen(request));
-    int headersCount = 0;
     
+    int headersCount = 0;
+    bzero(headers, 100 * sizeof(struct Header));
+    bzero(hResponse, 1024*1024);
+
     headers[0].n = hResponse;
     for (int i=0; read(s, hResponse + i, 1); i++) {
         if (hResponse[i] == '\n' && hResponse[i-1] == '\r') {
