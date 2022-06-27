@@ -185,7 +185,7 @@ Here are some functions for handling HTTP Dates:
         //send headers
         t = write(s2, response, strlen(response));
         if (t==-1) {
-            perror("write fallita); return -1;
+            perror("write fallita"); return -1;
         }
         rewind(fin);    // move pointer to the begin of the file
         //re-read and send the file, char per char
