@@ -48,3 +48,11 @@ nnoremap <C-S-Down> "add"ap
 map <F8> :w <CR> :!gcc % -o eb <CR> :!read -n1<CR>
 map <F9> :!./eb <CR>
 
+"---- Auto close brackets
+inoremap " ""<left>
+inoremap ' ''<left>
+inoremap ( ()<left>
+inoremap [ []<left>
+inoremap { {}<left>
+inoremap {<CR> {<CR>}<ESC>O
+inoremap {;<CR> {<CR>};<ESC>O
