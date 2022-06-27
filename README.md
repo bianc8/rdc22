@@ -323,6 +323,29 @@ To Execute press F9
     p (to Paste after the cursor)
 </details>
 
+# How to copy from another file in VIM:
+<details>
+<summary>Click to expand!</summary>
+
+Open the file from which you want to copy in Vim using:
+
+    vi ogFile.c (ogFile is the destination file)
+
+    ESC (go into Command mode)
+
+    :ePATH/file (open 'source' file at Path)
+
+    (select the lines that you want to copy)
+    y (copy/yank)
+
+    :q (close the 'source' file)
+
+    vi ogFile.c (open the 'destination' file)
+
+    p (paste the copied lines into the 'destination' file)
+</details>
+
+
 
 # If you've made an error, CTRL+z is u:
 <details>
