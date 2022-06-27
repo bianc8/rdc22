@@ -1,3 +1,9 @@
+# Important RFC
+
+[RFC 1945 HTTP/1.0](https://datatracker.ietf.org/doc/html/rfc1945)
+
+[RFC 2616 HTTP/1.1](https://datatracker.ietf.org/doc/html/rfc2616)
+
 # Functions
 
 Here there are some useful functions

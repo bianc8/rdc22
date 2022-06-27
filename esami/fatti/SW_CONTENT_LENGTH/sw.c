@@ -79,9 +79,17 @@ for (i=0,j=0; read(s2,hbuffer+i,1); i++) {
 			write(s2,response,strlen(response));
 			}
 		else{ 
-			sprintf(response,"HTTP/1.1 200 OK\r\n\r\n");
+            int contentLength = 0;
+            // headers
+            while ((c = fgetc(fin)) != EOF) contentLength++;
+			
+            printf("CONTENT LENGTH: %d\n", contentLength);
+
+            sprintf(response,"HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", contentLength);
 			write(s2,response,strlen(response));
-			while ( (c = fgetc(fin))!=EOF) write(s2,&c,1);
+            // send file
+            rewind(fin);    // move pointer fin to the begin of file
+			while ((c = fgetc(fin))!=EOF) write(s2,&c,1);
 			fclose(fin);
 			}
 	}
