@@ -14,9 +14,7 @@ N.B. lo user agent non sarà obbligato ad accedere al /file1.html subito prima d
 Non sarà sufficiente allo user agent accedere una volta per tutte a /file1.html per poi aver il permesso di accedere tante volte al /file2.html. Al contrario, dopo aver dato il permesso di accedere al /file2.html, il server vieterà un secondo accesso se prima il medesimo user agent non avrà avuto accesso di nuovo al /file1.html.
 
 
-403 Forbidden\r\nLocation:/file1.html\r\n
-
-
+Pseudocodice:
 Ad ogni richiesta a file1.html viene aggiunto un nuovo cookie daDoveProviene=provieneDa1.
 		
 Ad ogni richiesta a file2.html viene controllato se esiste il cookie daDoveProviene e se ha valore "provieneDa1"

@@ -6,7 +6,6 @@ Si modifichi il programma proxy in modo che per navigare su interent sia in HTTP
 Si faccia riferimento alla RFC 1945 per il metodo di autenticazione basic.
 
 
-
 s local
 s2 (proxy server al client)
 s3 (proxy client al server remote)
