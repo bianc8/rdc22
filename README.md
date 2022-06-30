@@ -212,6 +212,25 @@ Useful info
 
 **traceroute <URL>** routes an ip packet in which path it travels by printing the IP of every gateway that decides to drop the packet that was forged with low TTL (time to live, decremented on every hop) count.
 
+# How to use curl
+
+curl is a command-line tool to transfer data from or to a server, using one of the supported protocols (DICT, FILE, FTP, FTPS, GOPHER, **HTTP**, **HTTPS**, IMAP,
+       IMAPS, LDAP, LDAPS, POP3, POP3S, RTMP, RTSP, SCP, SFTP, SMB, SMBS, SMTP, SMTPS, TELNET and TFTP)
+    
+## Example request
+    $ curl http://example.com/
+    
+## Example verbose request, useful for debugging 
+    $ curl -v http://example.com/
+    
+## Send Curl request using Custom Header
+    $ curl -v http://example.com/ --headers [OR -H] "HeaderName: HeaderValue"
+    
+## Send Curl request using Basic Authentication, --basic is the default authentication mechanism so no need to specify it
+    $ curl -v http://example.com/ -u "username:password"
+    
+## Send curl request through a proxy, we have seen HTTP proxy
+    $ curl -v http://example.com/ --proxy [OR -x] http://88.80.187.84:3333
 
 # How to use Vim and other tips
 
