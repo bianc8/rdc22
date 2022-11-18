@@ -230,7 +230,7 @@ curl is a command-line tool to transfer data from or to a server, using one of t
     $ curl -v http://example.com/ -u "username:password"
     
 ## Send curl request through a proxy, we have seen HTTP proxy
-    $ curl -v http://example.com/ --proxy [OR -x] http://88.80.187.84:3333
+    $ curl -v http://example.com/ --proxy [OR -x] http://SERVER:PORT
 
 # How to use Vim and other tips
 
@@ -241,7 +241,7 @@ Remember to change MATRICOLA with your Unipd Student ID.
 
 Login using your SSH credentials.
 
-    scp -O ./.vimrc MATRICOLA@88.80.187.84:/home/MATRICOLA/.vimrc 
+    scp -O ./.vimrc MATRICOLA@SERVER_IP:/home/MATRICOLA/.vimrc 
 
 
 ## Content of .vimrc
